@@ -1,5 +1,67 @@
-<div style="background-color: #d2691e; color: white; text-align: center; padding: 20px; font-family: Arial, sans-serif; border-bottom: 5px solid #8b4513;">
-    <h1 style="margin: 0; font-size: 24px;">INSPEÇÃO DE SAÚDE 2026</h1>
-    <h2 style="margin: 5px 0 0 0; font-size: 20px;">ESPECIALIDADE: DERMATOLOGIA</h2>
-    <p style="margin: 5px 0 0 0; font-size: 14px;">CBA X - COMANDO DE BOMBEIROS DE ÁREA</p>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspeção Dermatológica 2026 - CBA X</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .header { background-color: #d2691e; color: white; text-align: center; padding: 20px; border-bottom: 5px solid #8b4513; }
+        .container { padding: 20px; max-width: 500px; margin: auto; background: white; border-radius: 8px; margin-top: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        label { font-weight: bold; display: block; margin-top: 15px; }
+        select, input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #d2691e; color: white; border: none; padding: 15px; width: 100%; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 20px; border-radius: 4px; }
+        button:hover { background-color: #a0522d; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1 style="margin: 0; font-size: 22px;">INSPEÇÃO DE SAÚDE 2026</h1>
+    <h2 style="margin: 5px 0 0 0; font-size: 18px;">DERMATOLOGIA - CBA X</h2>
 </div>
+
+<div class="container">
+    <form id="formDermato">
+        <label>Posto/Graduação:</label>
+        <select name="posto" required>
+            <option value="">Selecione...</option>
+            <option value="OFICIAL">Oficial</option>
+            <option value="SUBTEN/SGT">Subten/Sgt</option>
+            <option value="CB/SD">Cb/Sd</option>
+        </select>
+
+        <label>Nome Completo (Sem abreviar):</label>
+        <input type="text" name="nome" placeholder="Digite seu nome" required>
+
+        <label>RG Militar:</label>
+        <input type="number" name="rg" placeholder="Apenas números" required>
+
+        <label>Tipo de Inspeção:</label>
+        <select name="tipo" required>
+            <option value="INICIAL">Inicial</option>
+            <option value="PERIODICA">Periódica</option>
+            <option value="RETORNO">Retorno</option>
+        </select>
+
+        <label>Observações (Opcional):</label>
+        <textarea name="obs" rows="3"></textarea>
+
+        <button type="submit">REGISTRAR NA PLANILHA</button>
+    </form>
+</div>
+
+<script>
+    const form = document.getElementById('formDermato');
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+        alert('Enviando dados para a planilha do CBA X... Aguarde a confirmação.');
+        
+        // AQUI VOCÊ DEVE COLAR O SEU LINK DO GOOGLE SCRIPT (WebApp)
+        const URL_PLANILHA = "COLE_AQUI_O_LINK_DA_SUA_PLANILHA";
+
+        fetch(URL_PLANILHA, { method: 'POST', body: new FormData(form)})
+            .then(res => alert('Agendamento realizado com sucesso!'))
+            .catch(error => alert('Erro ao enviar! Tente novamente.'));
+    });
+</script
