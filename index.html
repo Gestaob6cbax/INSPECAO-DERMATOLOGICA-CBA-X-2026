@@ -73,15 +73,36 @@
 
         <hr>
 
-        <label>Agendamento</label>
-        <select id="dataLocal" onchange="atualizarInterfaceVagas()" required>
-            <option value="">Selecione o local e data...</option>
-            <option value="07/04/2026|CER Barra" data-max="83">07/04/2026 - CER Barra da Tijuca</option>
-            <option value="14/04/2026|CER Barra" data-max="83">14/04/2026 - CER Barra da Tijuca</option>
-            <option value="28/04/2026|CER Barra" data-max="83">28/04/2026 - CER Barra da Tijuca</option>
-            <option value="09/04/2026|3º GMAR" data-max="77">09/04/2026 - 3º GMAR Copacabana</option>
-            </select>
+      <label>Local e Data da Inspeção:</label>
+<select id="dataLocal" onchange="atualizarInterfaceVagas()" required>
+    <option value="">Selecione o local e data...</option>
+    
+    <optgroup label="CER BARRA (CBA X, CER, 2º GMAR, GBS)">
+        <option value="07/04/2026|CER Barra" data-max="83">07/04/2026 - CER Barra</option>
+        <option value="14/04/2026|CER Barra" data-max="83">14/04/2026 - CER Barra</option>
+        <option value="28/04/2026|CER Barra" data-max="83">28/04/2026 - CER Barra</option>
+    </optgroup>
 
+    <optgroup label="3º GMAR - COPACABANA">
+        <option value="09/04/2026|3º GMAR Copa" data-max="77">09/04/2026 - 3º GMAR</option>
+        <option value="05/05/2026|3º GMAR Copa" data-max="77">05/05/2026 - 3º GMAR</option>
+    </optgroup>
+
+    <optgroup label="4º GMAR - ITAIPU">
+        <option value="12/05/2026|4º GMAR Itaipu" data-max="55">12/05/2026 - 4º GMAR</option>
+        <option value="07/07/2026|4º GMAR Itaipu" data-max="55">07/07/2026 - 4º GMAR</option>
+    </optgroup>
+
+    <optgroup label="1º GMAR - BOTAFOGO">
+        <option value="11/06/2026|1º GMAR Botafogo" data-max="65">11/06/2026 - 1º GMAR</option>
+        <option value="02/07/2026|1º GMAR Botafogo" data-max="65">02/07/2026 - 1º GMAR</option>
+    </optgroup>
+
+    <optgroup label="DBM 3/M - RECREIO">
+        <option value="06/07/2026|DBM Recreio" data-max="85">06/07/2026 - DBM 3/M</option>
+        <option value="20/07/2026|DBM Recreio" data-max="85">20/07/2026 - DBM 3/M</option>
+    </optgroup>
+</select>
         <div id="displayVagas" class="vagas-info" style="display:none">
             <span>Vagas Totais nesta data: <b id="vagasTotal">--</b></span>
             <span>Disponíveis: <b id="numVagas" style="color:green">--</b></span>
@@ -170,27 +191,35 @@
     };
 
     function gerarPDF(dados) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const [data, local] = dados.dataLocal.split('|');
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const [data, local] = dados.dataLocal.split('|');
 
-        doc.setFontSize(18);
-        doc.text("Comprovante de Agendamento - Dermatologia", 20, 20);
-        
-        doc.setFontSize(12);
-        doc.text(`Nome: ${dados.nome}`, 20, 40);
-        doc.text(`Posto/Grad: ${dados.graduacao}`, 20, 50);
-        doc.text(`RG: ${dados.rg}`, 20, 60);
-        doc.text(`Unidade: ${dados.unidadeServe}`, 20, 70);
-        doc.text("--------------------------------------------------", 20, 80);
-        doc.text(`LOCAL DA INSPEÇÃO: ${local}`, 20, 90);
-        doc.text(`DATA: ${data}`, 20, 100);
-        doc.text(`TURNO DE CHEGADA: ${dados.horario}`, 20, 110);
-        doc.text("--------------------------------------------------", 20, 120);
-        doc.text("Apresente este documento impresso ou no celular no local.", 20, 135);
-        
-        doc.save(`Dermato_2026_${dados.rg}.pdf`);
-    }
+    // Lógica simples para definir a médica no PDF com base no local
+    let medica = "";
+    if (local.includes("CER Barra")) medica = "Dra. Ana Cristina";
+    else if (local.includes("3º GMAR") || local.includes("1º GMAR")) medica = "Dra. Gabriella Correa";
+    else if (local.includes("4º GMAR")) medica = "Dra. Marien de Lima";
+    else if (local.includes("DBM Recreio")) medica = "Dra. Mara Diane";
+
+    doc.setFontSize(18);
+    doc.text("Comprovante de Agendamento - Dermatologia", 20, 20);
+    
+    doc.setFontSize(12);
+    doc.text(`Nome: ${dados.nome}`, 20, 40);
+    doc.text(`Posto/Grad: ${dados.graduacao}`, 20, 50);
+    doc.text(`RG: ${dados.rg}`, 20, 60);
+    doc.text(`Unidade: ${dados.unidadeServe}`, 20, 70);
+    doc.text("--------------------------------------------------", 20, 80);
+    doc.text(`LOCAL DA INSPEÇÃO: ${local}`, 20, 90);
+    doc.text(`MÉDICA RESPONSÁVEL: ${medica}`, 20, 100);
+    doc.text(`DATA: ${data}`, 20, 110);
+    doc.text(`TURNO DE CHEGADA: ${dados.horario}`, 20, 120);
+    doc.text("--------------------------------------------------", 20, 130);
+    doc.text("Apresente este documento impresso ou no celular no local.", 20, 145);
+    
+    doc.save(`Dermato_2026_${dados.rg}.pdf`);
+}
 </script>
 
 </body>
