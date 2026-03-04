@@ -10,59 +10,159 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
 
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f4f4; padding: 20px; }
-        .card { background: white; max-width: 550px; margin: auto; padding: 25px; border-radius: 15px; border-top: 10px solid #d2691e; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f4f7f6; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px;
+        }
         
-        /* Logo Centralizada e Discreta */
-        .logo-container { display: flex; justify-content: center; margin-bottom: 10px; }
-        .logo { width: 90px; height: auto; }
+        .card { 
+            background: white; 
+            width: 100%;
+            max-width: 550px; 
+            padding: 40px; 
+            border-radius: 20px; 
+            border-top: 12px solid #d2691e; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+        }
 
-        h2 { text-align: center; color: #333; margin-bottom: 5px; font-size: 20px; }
-        p.sub { text-align: center; font-size: 13px; color: #666; margin-bottom: 20px; }
+        .logo-container { 
+            display: flex; 
+            justify-content: center; 
+            margin-bottom: 20px; 
+        }
         
-        label { font-weight: bold; font-size: 13px; color: #444; display: block; margin-top: 12px; }
-        input, select, button { width: 100%; padding: 12px; margin-top: 6px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; font-size: 15px; }
+        .logo { 
+            width: 100px; 
+            height: auto; 
+        }
+
+        h2 { 
+            text-align: center; 
+            color: #333; 
+            margin: 0 0 10px 0; 
+            font-size: 24px;
+        }
+
+        p.sub { 
+            text-align: center; 
+            font-size: 15px; 
+            color: #777; 
+            margin-bottom: 30px; 
+        }
         
-        button { background: #d2691e; color: white; border: none; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
-        button:disabled { background: #bbb; cursor: not-allowed; }
+        label { 
+            font-weight: 600; 
+            font-size: 14px; 
+            color: #444; 
+            display: block; 
+            margin-top: 20px; 
+        }
+
+        input, select { 
+            width: 100%; 
+            padding: 14px; 
+            margin-top: 8px; 
+            border-radius: 8px; 
+            border: 1px solid #ddd; 
+            box-sizing: border-box; 
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #d2691e;
+        }
         
-        .vagas-box { background: #fff3cd; padding: 10px; border-radius: 8px; font-size: 14px; margin-top: 15px; display: none; border: 1px solid #ffeeba; }
-        .status-msg { font-weight: bold; margin-top: 5px; display: block; }
-        hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
+        button { 
+            background: #d2691e; 
+            color: white; 
+            border: none; 
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-top: 30px; 
+            width: 100%;
+            transition: background 0.3s; 
+        }
+
+        button:hover:not(:disabled) { 
+            background: #a0522d; 
+        }
+
+        button:disabled { 
+            background: #ccc; 
+            cursor: not-allowed; 
+        }
+
+        .vagas-box { 
+            background: #fff9e6; 
+            padding: 15px; 
+            border-radius: 10px; 
+            font-size: 15px; 
+            margin-top: 20px; 
+            display: none; 
+            border: 1px solid #ffeeba; 
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        hr { 
+            margin: 35px 0; 
+            border: 0; 
+            border-top: 1px solid #eee; 
+        }
     </style>
 </head>
 <body>
 
 <div class="card">
     <div class="logo-container">
-        <img src="logo_cba_x.png" alt="Logo" class="logo">
+        <img src="logo_cba_x.png" alt="Logo CBA X" class="logo">
     </div>
     
     <h2>Inspeção Dermatológica 2026</h2>
     <p class="sub">CBA X - Comando de Bombeiros de Área</p>
 
     <form id="formDermato">
+        <label>Identificação Militar</label>
         <input type="text" id="nome" placeholder="Nome Completo" required>
-        <input type="text" id="rg" placeholder="RG Militar" required pattern="\d+">
+        <input type="text" id="rg" placeholder="RG Militar (apenas números)" required pattern="\d+">
         
         <select id="graduacao" required>
-            <option value="">Posto/Graduação...</option>
-            <option>SD</option><option>CB</option><option>SGT</option><option>SUBTEN</option>
-            <option>TEN</option><option>CAP</option><option>MAJ</option><option>TC</option><option>CEL</option>
+            <option value="">Selecione o Posto/Graduação...</option>
+            <option>SD BM</option><option>CB BM</option><option>3º SGT BM</option>
+            <option>2º SGT BM</option><option>1º SGT BM</option><option>SUBTEN BM</option>
+            <option>2º TEN BM</option><option>1º TEN BM</option><option>CAP BM</option>
+            <option>MAJ BM</option><option>TEN CEL BM</option><option>CEL BM</option>
         </select>
 
-        <select id="unidadeServe" required>
-            <option value="">Onde você serve?</option>
+        <select id="unidadeServe" required style="margin-top: 15px;">
+            <option value="">Unidade onde serve atualmente...</option>
             <option>CBA X</option><option>CER</option><option>1º GMAR</option>
             <option>2º GMAR</option><option>3º GMAR</option><option>4º GMAR</option>
-            <option>GBS</option><option>DBMs vinculados</option>
+            <option>GBS</option><option>DBM 1/M</option><option>DBM 2/M</option>
+            <option>DBM 3/M</option><option>DBM 4/M</option><option>DBM 5/M</option>
+            <option>DBM 6/M</option>
         </select>
 
         <hr>
 
-        <label>Local da Inspeção</label>
+        <label>Agendamento</label>
         <select id="local" onchange="carregarDatas()" required>
-            <option value="">Selecione o local...</option>
+            <option value="">Selecione o local da inspeção...</option>
             <option value="CER Barra">CER Barra da Tijuca</option>
             <option value="3º GMAR">3º GMAR - Copacabana</option>
             <option value="4º GMAR">4º GMAR - Itaipu</option>
@@ -70,30 +170,29 @@
             <option value="DBM 3/M">DBM 3/M - Recreio</option>
         </select>
 
-        <label>Data</label>
-        <select id="data" onchange="limparTurno()" required disabled></select>
+        <select id="data" onchange="limparTurno()" required disabled style="margin-top: 15px;">
+            <option value="">Selecione a data...</option>
+        </select>
 
-        <label>Turno (Ordem de Chegada)</label>
-        <select id="turno" onchange="checarVagas()" required>
+        <select id="turno" onchange="checarVagas()" required style="margin-top: 15px;">
             <option value="">Selecione o turno...</option>
             <option value="Manhã (08h às 12h)">Manhã (08h às 12h)</option>
             <option value="Tarde (13h às 17h)">Tarde (13h às 17h)</option>
         </select>
 
         <div id="vagasBox" class="vagas-box">
-            <div style="display:flex; justify-content: space-between;">
+            <div style="display:flex; justify-content: space-between; align-items: center;">
                 <span>Vagas no Turno:</span>
-                <span><b id="vagasOcupadas">0</b> / <b id="vagasMax">0</b></span>
+                <span style="font-size: 18px;"><b id="vagasOcupadas">0</b> / <b id="vagasMax">0</b></span>
             </div>
-            <span id="statusMsg" class="status-msg"></span>
+            <span id="statusMsg" style="font-weight:bold; margin-top:8px; display:block; text-align: center;"></span>
         </div>
 
-        <button type="submit" id="btnFinalizar">Confirmar e Gerar PDF</button>
+        <button type="submit" id="btnFinalizar">Confirmar Agendamento</button>
     </form>
 </div>
 
 <script>
-    // Configuração baseada no seu informativo
     const config = {
         "CER Barra": { max: 125, datas: ["07/04/2026", "14/04/2026"], medica: "Dra. Ana Cristina" },
         "3º GMAR": { max: 77, datas: ["09/04/2026", "05/05/2026"], medica: "Dra. Gabriella Correa" },
@@ -102,7 +201,6 @@
         "DBM 3/M": { max: 85, datas: ["06/07/2026", "20/07/2026"], medica: "Dra. Mara Diane" }
     };
 
-    // Firebase (Suas chaves)
     const firebaseConfig = {
         apiKey: "AIzaSyBkq2D8JFuxzPTI2z_Iirg3rYfSFfPJRXY",
         authDomain: "inspecao-saude-cbax.firebaseapp.com",
@@ -111,6 +209,7 @@
         messagingSenderId: "1011281662526",
         appId: "1:1011281662526:web:1028e8a8d140684e98376f"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
@@ -128,19 +227,17 @@
         limparTurno();
     }
 
-    function limparTurno() {
-        document.getElementById('turno').value = "";
-        document.getElementById('vagasBox').style.display = 'none';
+    function limparTurno() { 
+        document.getElementById('turno').value = ""; 
+        document.getElementById('vagasBox').style.display = 'none'; 
     }
 
     async function checarVagas() {
         const local = document.getElementById('local').value;
         const data = document.getElementById('data').value;
         const turno = document.getElementById('turno').value;
-        
         if (!data || !turno) return;
 
-        // Divisão 50/50 das vagas
         const totalDia = config[local].max;
         const vManha = Math.floor(totalDia / 2);
         const vTarde = totalDia - vManha;
@@ -151,64 +248,84 @@
         document.getElementById('vagasOcupadas').innerText = "...";
 
         const snap = await db.collection("agendamentos_dermato")
-            .where("local", "==", local).where("data", "==", data).where("turno", "==", turno).get();
-        
+                            .where("local", "==", local)
+                            .where("data", "==", data)
+                            .where("turno", "==", turno)
+                            .get();
+
         const ocupadas = snap.size;
         document.getElementById('vagasOcupadas').innerText = ocupadas;
         
         const msg = document.getElementById('statusMsg');
         const btn = document.getElementById('btnFinalizar');
 
-        if (ocupadas >= limite) {
-            msg.innerText = "❌ TURNO ESGOTADO"; msg.style.color = "red";
-            btn.disabled = true;
-        } else {
-            msg.innerText = "✅ VAGAS DISPONÍVEIS"; msg.style.color = "green";
-            btn.disabled = false;
+        if (ocupadas >= limite) { 
+            msg.innerText = "❌ ESTE TURNO ESTÁ LOTADO"; 
+            msg.style.color = "#d9534f"; 
+            btn.disabled = true; 
+        } else { 
+            msg.innerText = "✅ VAGAS DISPONÍVEIS"; 
+            msg.style.color = "#5cb85c"; 
+            btn.disabled = false; 
         }
     }
 
     document.getElementById('formDermato').onsubmit = async function(e) {
         e.preventDefault();
         const rg = document.getElementById('rg').value;
-        
-        // Bloqueio de duplicidade por RG
         const ref = db.collection("agendamentos_dermato").doc(rg);
         const doc = await ref.get();
-        if (doc.exists) { alert("Este RG já possui agendamento!"); return; }
+        
+        if (doc.exists) { 
+            alert("Atenção: Este RG já possui um agendamento registrado!"); 
+            return; 
+        }
 
         const dados = {
-            nome: document.getElementById('nome').value,
-            rg: rg,
+            nome: document.getElementById('nome').value, 
+            rg: rg, 
             graduacao: document.getElementById('graduacao').value,
-            local: document.getElementById('local').value,
+            local: document.getElementById('local').value, 
             data: document.getElementById('data').value,
-            turno: document.getElementById('turno').value,
+            turno: document.getElementById('turno').value, 
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        await ref.set(dados);
-        gerarPDF(dados);
-        alert("Agendamento Concluído!");
-        location.reload();
+        try {
+            await ref.set(dados);
+            gerarPDF(dados);
+            alert("Agendamento Concluído com Sucesso!"); 
+            location.reload();
+        } catch (e) {
+            alert("Erro ao salvar agendamento. Verifique sua conexão.");
+        }
     };
 
     function gerarPDF(d) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        doc.setFontSize(16);
-        doc.text("Comprovante de Agendamento - Dermatologia 2026", 20, 20);
-        doc.setFontSize(12);
-        doc.text(`Nome: ${d.nome} (${d.graduacao})`, 20, 40);
-        doc.text(`RG: ${d.rg}`, 20, 50);
-        doc.text("--------------------------------------------------", 20, 60);
-        doc.text(`LOCAL: ${d.local}`, 20, 70);
-        doc.text(`DATA: ${d.data}`, 20, 80);
-        doc.text(`TURNO: ${d.turno}`, 20, 90);
-        doc.text(`MÉDICA: ${config[d.local].medica}`, 20, 100);
-        doc.text("--------------------------------------------------", 20, 115);
-        doc.text("Apresente este documento na recepção do posto médico.", 20, 125);
-        doc.save(`Dermato_${d.rg}.pdf`);
+        doc.setFontSize(20);
+        doc.setTextColor(210, 105, 30);
+        doc.text("Comprovante de Agendamento", 105, 25, { align: "center" });
+        
+        doc.setFontSize(14);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Militar: ${d.nome} (${d.graduacao})`, 20, 50);
+        doc.text(`RG: ${d.rg}`, 20, 60);
+        
+        doc.setLineWidth(0.5);
+        doc.line(20, 70, 190, 70);
+        
+        doc.text(`Local: ${d.local}`, 20, 85);
+        doc.text(`Data: ${d.data}`, 20, 95);
+        doc.text(`Turno: ${d.turno}`, 20, 105);
+        doc.text(`Médica Responsável: ${config[d.local].medica}`, 20, 115);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text("Apresente este documento digital ou impresso no dia da inspeção.", 105, 140, { align: "center" });
+        
+        doc.save(`Dermatologia_${d.rg}.pdf`);
     }
 </script>
 </body>
