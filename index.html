@@ -3,74 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agendamento Dermatológico 2026 - CBA X</title>
+    <title>Dermatologia 2026 - CBA X</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
 
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f4f4; padding: 20px; }
-        .card { background: white; max-width: 600px; margin: auto; padding: 25px; border-radius: 15px; border-top: 10px solid #d2691e; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f4f4; padding: 20px; }
+        .card { background: white; max-width: 550px; margin: auto; padding: 25px; border-radius: 15px; border-top: 10px solid #d2691e; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        /* Centralização e Tamanho da Logo */
-        .logo-container { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
+        /* Logo Centralizada e Discreta */
+        .logo-container { display: flex; justify-content: center; margin-bottom: 10px; }
         .logo { width: 90px; height: auto; }
 
-        h2 { text-align: center; color: #333; margin-bottom: 5px; font-size: 22px; }
-        p.subtitulo { text-align: center; font-size: 14px; color: #666; margin-bottom: 25px; }
+        h2 { text-align: center; color: #333; margin-bottom: 5px; font-size: 20px; }
+        p.sub { text-align: center; font-size: 13px; color: #666; margin-bottom: 20px; }
         
-        label { font-weight: bold; font-size: 14px; color: #444; display: block; margin-top: 15px; }
-        input, select, button { width: 100%; padding: 12px; margin-top: 8px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
+        label { font-weight: bold; font-size: 13px; color: #444; display: block; margin-top: 12px; }
+        input, select, button { width: 100%; padding: 12px; margin-top: 6px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; font-size: 15px; }
         
-        button { background: #d2691e; color: white; border: none; font-weight: bold; cursor: pointer; margin-top: 25px; transition: 0.3s; }
-        button:hover { background: #a0522d; }
+        button { background: #d2691e; color: white; border: none; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        button:disabled { background: #bbb; cursor: not-allowed; }
         
-        .vagas-info { background: #fff3cd; padding: 12px; border-radius: 8px; font-size: 14px; margin-top: 15px; display: flex; justify-content: space-between; border: 1px solid #ffeeba; }
-        .aviso-regra { background: #e1f5fe; color: #01579b; border: 1px solid #b3e5fc; padding: 12px; border-radius: 8px; font-size: 13px; margin-top: 10px; }
-        hr { margin: 25px 0; border: 0; border-top: 1px solid #eee; }
+        .vagas-box { background: #fff3cd; padding: 10px; border-radius: 8px; font-size: 14px; margin-top: 15px; display: none; border: 1px solid #ffeeba; }
+        .status-msg { font-weight: bold; margin-top: 5px; display: block; }
+        hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <div class="logo-container">
-        <img src="logo_cba_x.png" alt="Logo CBA X" class="logo" />
+        <img src="logo_cba_x.png" alt="Logo" class="logo">
     </div>
     
     <h2>Inspeção Dermatológica 2026</h2>
-    <p class="subtitulo">CBA X - Comando de Bombeiros de Área</p>
+    <p class="sub">CBA X - Comando de Bombeiros de Área</p>
 
     <form id="formDermato">
-        <label>Dados Pessoais</label>
         <input type="text" id="nome" placeholder="Nome Completo" required>
-        <input type="text" id="rg" placeholder="RG Militar (Apenas números)" required pattern="\d+">
+        <input type="text" id="rg" placeholder="RG Militar" required pattern="\d+">
         
         <select id="graduacao" required>
-            <option value="">Posto ou Graduação...</option>
-            <option>SD BM</option><option>CB BM</option><option>3º SGT BM</option>
-            <option>2º SGT BM</option><option>1º SGT BM</option><option>SUBTEN BM</option>
-            <option>2º TEN BM</option><option>1º TEN BM</option><option>CAP BM</option>
-            <option>MAJ BM</option><option>TEN CEL BM</option><option>CEL BM</option>
+            <option value="">Posto/Graduação...</option>
+            <option>SD</option><option>CB</option><option>SGT</option><option>SUBTEN</option>
+            <option>TEN</option><option>CAP</option><option>MAJ</option><option>TC</option><option>CEL</option>
         </select>
 
-        <input type="email" id="email" placeholder="E-mail funcional ou pessoal" required>
-        <input type="tel" id="telefone" placeholder="Telefone (WhatsApp)" required>
-        
         <select id="unidadeServe" required>
-            <option value="">Unidade onde serve...</option>
-            <option>1º GMar - Botafogo</option><option>DBM 1/M - Paquetá</option>
-            <option>DBM 2/M - Piscinão de Ramos</option><option>CER</option>
-            <option>2º GMar - Barra da Tijuca</option><option>3º GMar - Copacabana</option>
-            <option>4º GMar - Itaipu</option><option>DBM 6/M - Itaipu</option>
-            <option>CBA X</option><option>DBM 3/M - Recreio</option>
-            <option>DBM 4/M - Barra de Guaratiba</option><option>DBM 5/M - Sepetiba</option>
+            <option value="">Onde você serve?</option>
+            <option>CBA X</option><option>CER</option><option>1º GMAR</option>
+            <option>2º GMAR</option><option>3º GMAR</option><option>4º GMAR</option>
+            <option>GBS</option><option>DBMs vinculados</option>
         </select>
 
         <hr>
 
         <label>Local da Inspeção</label>
-        <select id="localInspecao" onchange="configurarDatas()" required>
+        <select id="local" onchange="carregarDatas()" required>
             <option value="">Selecione o local...</option>
             <option value="CER Barra">CER Barra da Tijuca</option>
             <option value="3º GMAR">3º GMAR - Copacabana</option>
@@ -79,40 +70,39 @@
             <option value="DBM 3/M">DBM 3/M - Recreio</option>
         </select>
 
-        <label>Data da Inspeção</label>
-        <select id="dataInspecao" onchange="atualizarVagasReal()" required disabled>
-            <option value="">Selecione o local primeiro...</option>
-        </select>
+        <label>Data</label>
+        <select id="data" onchange="limparTurno()" required disabled></select>
 
-        <div id="displayVagas" class="vagas-info" style="display:none">
-            <span>Vagas para esta data:</span>
-            <span><b id="vagasOcupadas">0</b> / <b id="vagasMax">0</b></span>
-        </div>
-
-        <div id="avisoRegra" class="aviso-regra" style="display:none">
-            <b>Regra Geral:</b> Atendimento por ordem de chegada no turno selecionado.
-        </div>
-
-        <label>Turno de Chegada</label>
-        <select id="horario" required>
+        <label>Turno (Ordem de Chegada)</label>
+        <select id="turno" onchange="checarVagas()" required>
             <option value="">Selecione o turno...</option>
-            <option value="Manhã (08:00 às 12:00)">Manhã (08:00 às 12:00)</option>
-            <option value="Tarde (13:00 às 17:00)">Tarde (13:00 às 17:00)</option>
+            <option value="Manhã (08h às 12h)">Manhã (08h às 12h)</option>
+            <option value="Tarde (13h às 17h)">Tarde (13h às 17h)</option>
         </select>
 
-        <button type="submit" id="btnFinalizar">Finalizar Agendamento e Gerar PDF</button>
+        <div id="vagasBox" class="vagas-box">
+            <div style="display:flex; justify-content: space-between;">
+                <span>Vagas no Turno:</span>
+                <span><b id="vagasOcupadas">0</b> / <b id="vagasMax">0</b></span>
+            </div>
+            <span id="statusMsg" class="status-msg"></span>
+        </div>
+
+        <button type="submit" id="btnFinalizar">Confirmar e Gerar PDF</button>
     </form>
 </div>
 
 <script>
-    const cronograma = {
-        "CER Barra": { datas: ["07/04/2026", "14/04/2026", "28/04/2026"], max: 83 },
-        "3º GMAR": { datas: ["09/04/2026", "05/05/2026"], max: 77 },
-        "4º GMAR": { datas: ["12/05/2026", "07/07/2026"], max: 55 },
-        "1º GMAR": { datas: ["11/06/2026", "02/07/2026"], max: 65 },
-        "DBM 3/M": { datas: ["06/07/2026", "20/07/2026"], max: 85 }
+    // Configuração baseada no seu informativo
+    const config = {
+        "CER Barra": { max: 125, datas: ["07/04/2026", "14/04/2026"], medica: "Dra. Ana Cristina" },
+        "3º GMAR": { max: 77, datas: ["09/04/2026", "05/05/2026"], medica: "Dra. Gabriella Correa" },
+        "4º GMAR": { max: 55, datas: ["12/05/2026", "07/07/2026"], medica: "Dra. Marien de Lima" },
+        "1º GMAR": { max: 65, datas: ["11/06/2026", "02/07/2026"], medica: "Dra. Gabriella Correa" },
+        "DBM 3/M": { max: 85, datas: ["06/07/2026", "20/07/2026"], medica: "Dra. Mara Diane" }
     };
 
+    // Firebase (Suas chaves)
     const firebaseConfig = {
         apiKey: "AIzaSyBkq2D8JFuxzPTI2z_Iirg3rYfSFfPJRXY",
         authDomain: "inspecao-saude-cbax.firebaseapp.com",
@@ -124,87 +114,101 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    function configurarDatas() {
-        const local = document.getElementById('localInspecao').value;
-        const dataSel = document.getElementById('dataInspecao');
+    function carregarDatas() {
+        const local = document.getElementById('local').value;
+        const dataSel = document.getElementById('data');
         dataSel.innerHTML = '<option value="">Selecione a data...</option>';
         if (local) {
             dataSel.disabled = false;
-            cronograma[local].datas.forEach(d => {
-                let opt = document.createElement('option');
-                opt.value = d; opt.text = d;
-                dataSel.appendChild(opt);
+            config[local].datas.forEach(d => {
+                let o = document.createElement('option'); o.value = d; o.text = d;
+                dataSel.appendChild(o);
             });
         }
-        document.getElementById('displayVagas').style.display = 'none';
-        document.getElementById('avisoRegra').style.display = 'none';
+        limparTurno();
     }
 
-    async function atualizarVagasReal() {
-        const local = document.getElementById('localInspecao').value;
-        const data = document.getElementById('dataInspecao').value;
-        if (!data) return;
-        document.getElementById('displayVagas').style.display = 'flex';
-        document.getElementById('vagasMax').innerText = cronograma[local].max;
-        document.getElementById('avisoRegra').style.display = 'block';
+    function limparTurno() {
+        document.getElementById('turno').value = "";
+        document.getElementById('vagasBox').style.display = 'none';
+    }
 
-        const snapshot = await db.collection("agendamentos_dermato")
-            .where("localInspecao", "==", local)
-            .where("dataInspecao", "==", data).get();
-        document.getElementById('vagasOcupadas').innerText = snapshot.size;
+    async function checarVagas() {
+        const local = document.getElementById('local').value;
+        const data = document.getElementById('data').value;
+        const turno = document.getElementById('turno').value;
+        
+        if (!data || !turno) return;
+
+        // Divisão 50/50 das vagas
+        const totalDia = config[local].max;
+        const vManha = Math.floor(totalDia / 2);
+        const vTarde = totalDia - vManha;
+        const limite = turno.includes("Manhã") ? vManha : vTarde;
+
+        document.getElementById('vagasBox').style.display = 'block';
+        document.getElementById('vagasMax').innerText = limite;
+        document.getElementById('vagasOcupadas').innerText = "...";
+
+        const snap = await db.collection("agendamentos_dermato")
+            .where("local", "==", local).where("data", "==", data).where("turno", "==", turno).get();
+        
+        const ocupadas = snap.size;
+        document.getElementById('vagasOcupadas').innerText = ocupadas;
+        
+        const msg = document.getElementById('statusMsg');
+        const btn = document.getElementById('btnFinalizar');
+
+        if (ocupadas >= limite) {
+            msg.innerText = "❌ TURNO ESGOTADO"; msg.style.color = "red";
+            btn.disabled = true;
+        } else {
+            msg.innerText = "✅ VAGAS DISPONÍVEIS"; msg.style.color = "green";
+            btn.disabled = false;
+        }
     }
 
     document.getElementById('formDermato').onsubmit = async function(e) {
         e.preventDefault();
         const rg = document.getElementById('rg').value;
-        const local = document.getElementById('localInspecao').value;
-        const data = document.getElementById('dataInspecao').value;
-
-        const docRef = db.collection("agendamentos_dermato").doc(rg);
-        const docSnap = await docRef.get();
-        if (docSnap.exists) { alert("⚠️ Este RG já possui agendamento!"); return; }
-
-        const snapshot = await db.collection("agendamentos_dermato")
-            .where("localInspecao", "==", local).where("dataInspecao", "==", data).get();
-        if (snapshot.size >= cronograma[local].max) { alert("⚠️ Vagas esgotadas!"); return; }
+        
+        // Bloqueio de duplicidade por RG
+        const ref = db.collection("agendamentos_dermato").doc(rg);
+        const doc = await ref.get();
+        if (doc.exists) { alert("Este RG já possui agendamento!"); return; }
 
         const dados = {
-            nome: document.getElementById('nome').value, rg: rg,
+            nome: document.getElementById('nome').value,
+            rg: rg,
             graduacao: document.getElementById('graduacao').value,
-            email: document.getElementById('email').value,
-            telefone: document.getElementById('telefone').value,
-            unidadeServe: document.getElementById('unidadeServe').value,
-            localInspecao: local, dataInspecao: data,
-            horario: document.getElementById('horario').value,
+            local: document.getElementById('local').value,
+            data: document.getElementById('data').value,
+            turno: document.getElementById('turno').value,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        await docRef.set(dados);
+        await ref.set(dados);
         gerarPDF(dados);
-        alert("✅ Agendamento concluído!");
+        alert("Agendamento Concluído!");
         location.reload();
     };
 
-    function gerarPDF(dados) {
+    function gerarPDF(d) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        let medica = "";
-        if (dados.localInspecao.includes("CER Barra")) medica = "Dra. Ana Cristina";
-        else if (dados.localInspecao.includes("3º GMAR") || dados.localInspecao.includes("1º GMAR")) medica = "Dra. Gabriella Correa";
-        else if (dados.localInspecao.includes("4º GMAR")) medica = "Dra. Marien de Lima";
-        else if (dados.localInspecao.includes("DBM 3/M")) medica = "Dra. Mara Diane";
-
-        doc.setFontSize(18);
-        doc.text("Comprovante de Agendamento - Dermatologia", 20, 20);
+        doc.setFontSize(16);
+        doc.text("Comprovante de Agendamento - Dermatologia 2026", 20, 20);
         doc.setFontSize(12);
-        doc.text(`Nome: ${dados.nome}`, 20, 40);
-        doc.text(`RG: ${dados.rg}`, 20, 50);
-        doc.text(`Local: ${dados.localInspecao}`, 20, 60);
-        doc.text(`Data: ${dados.dataInspecao} - Turno: ${dados.horario}`, 20, 70);
-        doc.text(`Médica Responsável: ${medica}`, 20, 80);
-        doc.text("--------------------------------------------------", 20, 95);
-        doc.text("Regra: Ordem de chegada no turno selecionado.", 20, 105);
-        doc.save(`Dermato_${dados.rg}.pdf`);
+        doc.text(`Nome: ${d.nome} (${d.graduacao})`, 20, 40);
+        doc.text(`RG: ${d.rg}`, 20, 50);
+        doc.text("--------------------------------------------------", 20, 60);
+        doc.text(`LOCAL: ${d.local}`, 20, 70);
+        doc.text(`DATA: ${d.data}`, 20, 80);
+        doc.text(`TURNO: ${d.turno}`, 20, 90);
+        doc.text(`MÉDICA: ${config[d.local].medica}`, 20, 100);
+        doc.text("--------------------------------------------------", 20, 115);
+        doc.text("Apresente este documento na recepção do posto médico.", 20, 125);
+        doc.save(`Dermato_${d.rg}.pdf`);
     }
 </script>
 </body>
