@@ -1,221 +1,143 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AGENDAMENTO DERMATOLOGIA – CBA X – 2026</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento Dermatológico 2026 - CBA X</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    
     <style>
-        /* Cor Laranja - Campanha de Combate ao Câncer de Pele */
-        body { font-family: 'Segoe UI', Arial, sans-serif; background:#f4f4f4; margin:0; padding:0; }
-        .header-top { background: #ff8c00; color: white; padding: 25px 10px; text-align: center; border-bottom: 5px solid #e67e00; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .header-top img { max-width: 90px; margin-bottom: 10px; }
-        .header-top h2 { margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; }
-        .header-top p { margin: 5px 0 0; font-size: 14px; opacity: 0.9; }
-
-        .container { max-width: 600px; margin: -40px auto 50px; background:#fff; padding:30px; border-radius:12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border-top: 4px solid #ff8c00; }
-        input, select, button { width:100%; padding:14px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd; font-size:15px; box-sizing:border-box; transition: 0.3s; }
-        input:focus, select:focus { border-color: #ff8c00; outline: none; box-shadow: 0 0 8px rgba(255,140,0,0.1); }
-
-        button { background:#ff8c00; color:#fff; border:none; cursor:pointer; font-weight:bold; font-size: 16px; text-transform: uppercase; }
-        button:hover { background:#e67e00; transform: translateY(-2px); }
-        button:disabled { background:#ccc !important; cursor:not-allowed; transform: none; }
-
-        /* Cronômetro de Vagas */
-        #vagasBox { 
-            display:none; padding:15px; border-radius:8px; margin-bottom:15px; 
-            text-align:center; font-weight:bold; border: 1px solid #ddd; font-size: 15px;
-        }
-        .vagas-ok { background: #fff5e6; color: #855a00; border-color: #ffe0b3 !important; }
-        .vagas-alerta { background: #fffaf0; color: #9c4221; border-color: #feebc8 !important; }
-        .vagas-esgotado { background: #fff5f5; color: #c53030; border-color: #feb2b2 !important; }
-
-        #comprovanteBox { display:none; text-align:left; background:#fffafa; border:2px solid #ff8c00; border-radius:12px; padding:25px; margin-top:14px; }
-        #comprovanteBox h3 { margin:0 0 15px 0; color: #ff8c00; border-bottom: 2px solid #ff8c00; padding-bottom: 10px; text-align: center; }
-        .linha { margin:10px 0; font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 5px; color: #333; }
-        .linha b { color: #ff8c00; width: 140px; display: inline-block; }
+        :root { --cba-orange: #fb8c00; --cba-blue: #0a2c6d; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 0; padding: 10px; display: flex; justify-content: center; }
+        .premium-card { width: 100%; max-width: 480px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); border-top: 8px solid var(--cba-orange); }
+        header { text-align: center; margin-bottom: 25px; }
+        header img { width: 90px; }
+        header h2 { color: var(--cba-blue); margin: 10px 0 5px; font-size: 1.3rem; text-transform: uppercase; }
+        .section-title { background: var(--cba-orange); color: white; padding: 8px 15px; font-size: 0.75rem; font-weight: bold; border-radius: 5px; margin-top: 25px; text-transform: uppercase; text-align: center; }
+        label { display: block; margin-top: 15px; font-weight: 700; color: #333; font-size: 0.75rem; text-transform: uppercase; }
+        input, select { width: 100%; padding: 14px; margin-top: 6px; border: 2px solid #dfe4ea; border-radius: 10px; box-sizing: border-box; font-size: 16px; background-color: #fcfcfc; }
         
-        .btnRow { display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; }
-        .btnPrint { background:#28a745; width: auto; flex-grow: 1; }
-        .btnNova { background:#4b5563; width: auto; flex-grow: 1; }
+        .vagas-badge { margin-top: 10px; padding: 12px; border-radius: 10px; text-align: center; font-size: 0.9rem; font-weight: bold; display: none; border: 1px solid; }
+        .vagas-ok { background: #fff3e0; color: #e65100; border-color: #ffe0b2; }
+        .vagas-esgotado { background: #ffebee; color: #b71c1c; border-color: #ffcdd2; }
 
-        @media print {
-            body { background:#fff; }
-            .container { max-width:100%; margin:0; box-shadow: none; border: none; }
-            form, .header-top, #vagasBox { display:none !important; }
-            #comprovanteBox { display:block !important; border:none; width: 100%; padding: 0; }
-        }
+        .btn-confirmar { background: linear-gradient(135deg, var(--cba-orange) 0%, #ef6c00 100%); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 30px; font-size: 1.1rem; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-<div class="header-top">
-    <img src="https://raw.githubusercontent.com/gestaob6cbax/INSPECAO-MEDICA-CBA-X-2026/main/logo_cba_x.png" alt="Logo CBA X" />
-    <h2>DERMATOLOGIA – CBA X</h2>
-    <p>Prevenção e Cuidado com a Tropa</p>
-</div>
+<div class="premium-card">
+    <header>
+        <img src="https://raw.githubusercontent.com/gestaob6cbax/INSPECAO-MEDICA-CBA-X-2026/main/logo_cba_x.png" alt="CBA X">
+        <h2>Agendamento Dermatológico</h2>
+        <p style="font-weight: bold; font-size: 0.8rem; color: #666;">CBA X - PREVENÇÃO 2026</p>
+    </header>
 
-<div class="container">
-    <form id="formAgendamento" autocomplete="off">
-        <input type="text" id="nome" placeholder="Nome completo" required />
-        <input type="text" id="rg" placeholder="RG Militar" required />
-        <input type="tel" id="telefone" placeholder="Telefone / WhatsApp" required />
-        <input type="tel" id="email pessoal" placeholder="email pessoal" required />
+    <div id="form-content">
+        <div class="section-title">Identificação do Militar</div>
+        <label>Posto / Graduação</label>
+        <select id="posto">
+            <option value="">Selecione...</option>
+            <option>SD BM</option><option>CB BM</option><option>3º SGT BM</option><option>2º SGT BM</option><option>1º SGT BM</option><option>SUBTEN BM</option>
+            <option>2º TEN BM</option><option>1º TEN BM</option><option>CAP BM</option><option>MAJ BM</option><option>TEN CEL BM</option><option>CEL BM</option>
+        </select>
+        <input type="text" id="nome" placeholder="NOME COMPLETO" oninput="this.value = this.value.toUpperCase()">
+        <input type="number" id="rg" placeholder="RG MILITAR">
+        
+        <input type="tel" id="telefone" placeholder="TELEFONE (DDD + NÚMERO)">
+        <input type="email" id="email" placeholder="E-MAIL">
 
-        <select id="unidade" required>
-            <option value="">Selecione o Local de Atendimento</option>
-            <option>CBA X (Sede)</option>
-            <option>1º GMar - Botafogo</option>
-            <option>2º GMar - Barra</option>
-            <option>3º GMar - Copacabana</option>
-            <option>4º GMar - Itaipu</option>
+        <div class="section-title">Local e Data</div>
+        <label>Unidade de Atendimento</label>
+        <select id="unidadeDestino" onchange="atualizarVagas()">
+            <option value="">Selecione o local...</option>
+            <option value="1GMAR">1º GMAR - BOTAFOGO</option>
+            <option value="2GMAR">2º GMAR - BARRA</option>
+            <option value="3GMAR">3º GMAR - COPACABANA</option>
+            <option value="4GMAR">4º GMAR - ITAIPU</option>
         </select>
 
-        <select id="dataSelect" required><option value="">Selecione a Data</option></select>
-
-        <div id="vagasBox"></div>
-        
-        <select id="turno" required>
-            <option value="">Selecione o Turno</option>
-            <option value="Manhã">Manhã (08h às 12h)</option>
-            <option value="Tarde">Tarde (13h às 16h)</option>
+        <label>Data da Consulta</label>
+        <select id="data" onchange="atualizarVagas()">
+            <option value="">Selecione a data...</option>
+            <option>A DEFINIR</option>
         </select>
-        
-        <button type="submit" id="btnAgendar">Confirmar Agendamento</button>
-    </form>
-    
-    <div id="comprovanteBox">
-        <h3>✅ AGENDAMENTO CONFIRMADO</h3>
-        <div class="linha"><b>Militar:</b> <span id="cNome"></span></div>
-        <div class="linha"><b>RG:</b> <span id="cRg"></span></div>
-        <div class="linha"><b>Local:</b> <span id="cUnidade"></span></div>
-        <div class="linha"><b>Data:</b> <span id="cData"></span></div>
-        <div class="linha"><b>Turno:</b> <span id="cTurno"></span></div>
-        <div class="linha"><b>Protocolo:</b> <span id="cProto" style="font-weight: bold;"></span></div>
-        
-        <div class="btnRow">
-            <button type="button" class="btnPrint" onclick="window.print()">🖨️ Imprimir</button>
-            <button type="button" class="btnNova" onclick="location.reload()">Novo Agendamento</button>
-        </div>
+
+        <div id="statusVagas" class="vagas-badge"></div>
+
+        <button id="btnSalvar" class="btn-confirmar" onclick="salvar()">Confirmar Agendamento</button>
     </div>
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import { getFirestore, collection, doc, runTransaction, serverTimestamp, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-    
-    // --- COLE AQUI O SEU FIREBASE CONFIG DO DERMATO ---
+<script>
     const firebaseConfig = {
-        apiKey: "SUA_API_KEY",
-        authDomain: "dermato-cbax.firebaseapp.com",
-        projectId: "dermato-cbax",
-        storageBucket: "dermato-cbax.appspot.com",
-        messagingSenderId: "ID_SENDER",
-        appId: "ID_APP"
+        apiKey: "AIzaSyDDWZDSNvsXyKDl0T54ROn_pOUSUGheQZw",
+        authDomain: "inspecao-dermatologia-cbax.firebaseapp.com",
+        projectId: "inspecao-dermatologia-cbax",
+        storageBucket: "inspecao-dermatologia-cbax.firebasestorage.app",
+        messagingSenderId: "513142138310",
+        appId: "1:513142138310:web:74cb653c48f574541dfec7"
     };
-    
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    const LIMITE_POR_TURNO = 7;
+    async function atualizarVagas() {
+        const local = document.getElementById("unidadeDestino").value;
+        const dataSel = document.getElementById("data").value;
+        const badge = document.getElementById("statusVagas");
 
-    const unidadeEl = document.getElementById("unidade");
-    const dataSelect = document.getElementById("dataSelect");
-    const turnoEl = document.getElementById("turno");
-    const vagasBox = document.getElementById("vagasBox");
-    const btnAgendar = document.getElementById("btnAgendar");
+        if (!local || !dataSel || dataSel === "A DEFINIR") return;
 
-    function formatBR(ymd) { return ymd.split('-').reverse().join('/'); }
+        badge.style.display = "block";
+        badge.innerText = "🔍 CONSULTANDO VAGAS...";
 
-    // Gerador automático de datas (Exemplo: Segundas e Quartas)
-    unidadeEl.addEventListener("change", () => {
-        dataSelect.innerHTML = '<option value="">Selecione a Data</option>';
-        let d = new Date();
-        for(let i=0; i<60; i++) {
-            d.setDate(d.getDate() + 1);
-            if(d.getDay() === 1 || d.getDay() === 3) { // 1=Segunda, 3=Quarta
-                const ymd = d.toISOString().split('T')[0];
-                dataSelect.add(new Option(formatBR(ymd), ymd));
-            }
+        const snapshot = await db.collection("agendamentos")
+            .where("unidadeDestino", "==", local)
+            .where("data", "==", dataSel)
+            .get();
+
+        const limiteVagas = 15; 
+        const restam = limiteVagas - snapshot.size;
+
+        if (restam <= 0) {
+            badge.innerText = "❌ DATA ESGOTADA";
+            badge.className = "vagas-badge vagas-esgotado";
+            document.getElementById("btnSalvar").disabled = true;
+        } else {
+            badge.innerText = `✅ ${restam} VAGAS DISPONÍVEIS`;
+            badge.className = "vagas-badge vagas-ok";
+            document.getElementById("btnSalvar").disabled = false;
         }
-    });
-
-    async function atualizarCronometro() {
-        const dataVal = dataSelect.value;
-        const localVal = unidadeEl.value;
-        const turnoVal = turnoEl.value;
-
-        if (!dataVal || !localVal || !turnoVal) { vagasBox.style.display = "none"; return; }
-
-        vagasBox.style.display = "block";
-        vagasBox.textContent = "⌛ Verificando disponibilidade...";
-        btnAgendar.disabled = true;
-
-        try {
-            const q = query(collection(db, "agendamentos"), 
-                            where("data", "==", dataVal), 
-                            where("unidade", "==", localVal),
-                            where("turno", "==", turnoVal));
-            
-            const snap = await getDocs(q);
-            const ocupadas = snap.size;
-            const restam = LIMITE_POR_TURNO - ocupadas;
-
-            if (restam <= 0) {
-                vagasBox.className = "vagas-esgotado";
-                vagasBox.textContent = `❌ TURNO ${turnoVal.toUpperCase()} ESGOTADO`;
-                btnAgendar.disabled = true;
-            } else {
-                vagasBox.className = restam <= 2 ? "vagas-alerta" : "vagas-ok";
-                vagasBox.textContent = `✅ ${restam} VAGAS DISPONÍVEIS (Turno ${turnoVal})`;
-                btnAgendar.disabled = false;
-            }
-        } catch (e) { vagasBox.textContent = "Erro ao carregar vagas."; }
     }
 
-    dataSelect.addEventListener("change", atualizarCronometro);
-    turnoEl.addEventListener("change", atualizarCronometro);
+    async function salvar() {
+        const d = {
+            posto: document.getElementById("posto").value,
+            nome: document.getElementById("nome").value.trim(),
+            rg: document.getElementById("rg").value.trim(),
+            telefone: document.getElementById("telefone").value.trim(),
+            email: document.getElementById("email").value.trim().toLowerCase(),
+            unidadeDestino: document.getElementById("unidadeDestino").value,
+            data: document.getElementById("data").value,
+            tipo: "DERMATOLOGIA",
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        };
 
-    document.getElementById("formAgendamento").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const rg = document.getElementById("rg").value.trim().replace(/\D/g, "");
-        btnAgendar.disabled = true;
+        if (Object.values(d).some(v => !v)) return alert("Por favor, preencha todos os campos corretamente.");
 
         try {
-            const lockRef = doc(db, "rg_locks", rg);
-            await runTransaction(db, async (tx) => {
-                const lSnap = await tx.get(lockRef);
-                if (lSnap.exists()) throw new Error("JÁ AGENDADO");
+            const check = await db.collection("agendamentos").where("rg", "==", d.rg).get();
+            if (!check.empty) return alert("Este RG já possui agendamento!");
 
-                const q = query(collection(db, "agendamentos"), 
-                                where("data", "==", dataSelect.value), 
-                                where("unidade", "==", unidadeEl.value),
-                                where("turno", "==", turnoEl.value));
-                const s = await getDocs(q);
-                if (s.size >= LIMITE_POR_TURNO) throw new Error("ESGOTADO");
-
-                const agRef = doc(collection(db, "agendamentos"));
-                const dados = {
-                    nome: document.getElementById("nome").value.toUpperCase(),
-                    rg, unidade: unidadeEl.value, data: dataSelect.value, 
-                    data_br: formatBR(dataSelect.value), turno: turnoEl.value, criadoEm: serverTimestamp()
-                };
-                tx.set(agRef, dados);
-                tx.set(lockRef, { rg });
-
-                document.getElementById("cNome").textContent = dados.nome;
-                document.getElementById("cRg").textContent = dados.rg;
-                document.getElementById("cUnidade").textContent = dados.unidade;
-                document.getElementById("cData").textContent = dados.data_br;
-                document.getElementById("cTurno").textContent = dados.turno;
-                document.getElementById("cProto").textContent = `DERM-${rg}-${dados.data.replace(/-/g,"")}`;
-            });
-            document.getElementById("formAgendamento").style.display = "none";
-            document.getElementById("comprovanteBox").style.display = "block";
-        } catch (err) {
-            alert(err.message === "JÁ AGENDADO" ? "⚠️ RG já possui agendamento." : "❌ Vagas esgotadas para este turno.");
-            btnAgendar.disabled = false;
+            await db.collection("agendamentos").add(d);
+            alert("Agendamento Dermatológico realizado com sucesso!");
+            location.reload();
+        } catch (e) { 
+            alert("Erro ao salvar no banco de dados."); 
         }
-    });
+    }
 </script>
 </body>
 </html>
