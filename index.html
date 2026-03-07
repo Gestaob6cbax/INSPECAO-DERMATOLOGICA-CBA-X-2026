@@ -19,11 +19,12 @@
 
         .section-title { background: var(--cba-orange); color: white; padding: 8px 15px; font-size: 0.75rem; font-weight: bold; border-radius: 5px; margin-top: 25px; text-transform: uppercase; text-align: center; }
         
-        input, select { width: 100%; padding: 14px; margin-top: 10px; border: 2px solid #dfe4ea; border-radius: 10px; box-sizing: border-box; font-size: 16px; background-color: #fcfcfc; display: block; }
+        label { display: block; margin-top: 15px; font-weight: 700; color: #333; font-size: 0.7rem; text-transform: uppercase; }
+        input, select { width: 100%; padding: 14px; margin-top: 5px; border: 2px solid #dfe4ea; border-radius: 10px; box-sizing: border-box; font-size: 16px; background-color: #fcfcfc; display: block; }
         
         .btn-confirmar { background: var(--cba-orange); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 30px; font-size: 1.1rem; text-transform: uppercase; }
 
-        /* COMPROVANTE PADRÃO CBA X - AGORA EM LARANJA */
+        /* COMPROVANTE LARANJA */
         #sucesso { display: none; text-align: center; }
         .caixa-recibo { border: 2px dashed var(--cba-orange); padding: 25px; border-radius: 15px; margin: 20px 0; background: #fffdfd; text-align: left; }
         .status-ok { color: var(--cba-orange); font-weight: bold; text-align: center; display: block; margin-bottom: 15px; font-size: 1.1rem; }
@@ -34,7 +35,7 @@
         .btn-imprimir { background: #555; color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
         .link-voltar { display: block; margin-top: 15px; color: var(--cba-blue); font-size: 0.8rem; text-decoration: underline; cursor: pointer; }
 
-        @media print { .btn-imprimir, .link-voltar, .btn-confirmar { display: none; } }
+        @media print { .btn-imprimir, .link-voltar, .btn-confirmar { display: none; } .premium-card { border: none; box-shadow: none; } }
     </style>
 </head>
 <body>
@@ -49,18 +50,17 @@
 
         <div class="section-title">Dados do Militar</div>
         
-        <select id="unidadeOrigem">
-            <option value="">UNIDADE QUE SERVE</option>
-            <option>CER BARRA</option>
-            <option>1º GMAR</option>
-            <option>2º GMAR</option>
-            <option>3º GMAR</option>
-            <option>4º GMAR</option>
-            <option>DBM (ITAIPU/RECREIO/OUTROS)</option>
+        <label>Unidade de Origem (Onde serve)</label>
+        <select id="unidadeServe">
+            <option value="">Onde você está lotado?</option>
+            <option>CBA X</option><option>1º GMAR</option><option>2º GMAR</option><option>3º GMAR</option><option>4º GMAR</option>
+            <option>DBM 1/M (PAQUETÁ)</option><option>DBM 2/M (PISCINÃO)</option><option>DBM 3/M (RECREIO)</option>
+            <option>DBM 4/M (GUARATIBA)</option><option>DBM 5/M (SEPETIBA)</option><option>DBM 6/M (ITAIPU)</option>
         </select>
 
+        <label>Posto / Graduação</label>
         <select id="posto">
-            <option value="">POSTO / GRADUAÇÃO</option>
+            <option value="">Selecione...</option>
             <option>SD BM</option><option>CB BM</option><option>3º SGT BM</option><option>2º SGT BM</option><option>1º SGT BM</option><option>SUBTEN BM</option>
             <option>OFICIAL</option>
         </select>
@@ -73,11 +73,8 @@
         <div class="section-title">Agendamento</div>
         <select id="data">
             <option value="">SELECIONE A DATA</option>
-            <option>07/04/2026</option>
-            <option>09/04/2026</option>
-            <option>14/04/2026</option>
-            <option>28/04/2026</option>
-            <option>05/05/2026</option>
+            <option>07/04/2026</option><option>09/04/2026</option><option>14/04/2026</option>
+            <option>28/04/2026</option><option>05/05/2026</option>
         </select>
 
         <button id="btnSalvar" class="btn-confirmar" onclick="salvar()">Confirmar Inscrição</button>
@@ -93,7 +90,6 @@
         <div class="caixa-recibo">
             <span class="status-ok">✅ AGENDAMENTO CONFIRMADO</span>
             <div class="militar-nome" id="res-nome"></div>
-            
             <div class="info-linha"><b>RG:</b> <span id="res-rg"></span></div>
             <div class="info-linha"><b>Unidade:</b> <span id="res-unidade"></span></div>
             <div class="info-linha"><b>Local:</b> POLICLÍNICA CBA X (Barra)</div>
@@ -121,7 +117,7 @@
     async function salvar() {
         const btn = document.getElementById("btnSalvar");
         const d = {
-            unidadeOrigem: document.getElementById("unidadeOrigem").value,
+            unidadeOrigem: document.getElementById("unidadeServe").value,
             posto: document.getElementById("posto").value,
             nome: document.getElementById("nome").value.trim().toUpperCase(),
             rg: document.getElementById("rg").value.trim(),
@@ -132,12 +128,12 @@
         };
 
         if(!d.unidadeOrigem || !d.nome || !d.rg || !d.data) {
-            alert("Atenção: Preencha todos os campos obrigatórios.");
+            alert("Preencha todos os campos obrigatórios.");
             return;
         }
 
         btn.disabled = true;
-        btn.innerText = "SALVANDO...";
+        btn.innerText = "OK...";
 
         try {
             await db.collection("agendamentos_dermato").add(d);
@@ -148,6 +144,7 @@
 
             document.getElementById("form-content").style.display = "none";
             document.getElementById("sucesso").style.display = "block";
+            window.scrollTo(0,0);
         } catch (e) {
             alert("Erro ao salvar.");
             btn.disabled = false;
