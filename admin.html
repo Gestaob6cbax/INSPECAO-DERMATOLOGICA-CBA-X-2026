@@ -2,35 +2,108 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>ADM - DERMATOLOGIA 2026</title>
+    <title>ADM - DERMATOLOGIA 2026 - CBA X</title>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <style>
-        :root { --cba-orange: #fb8c00; --cba-blue: #0a2c6d; }
+        :root { --cba-orange: #fb8c00; --cba-blue: #0a2c6d; --danger: #d32f2f; }
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
-        header { background: var(--cba-blue); color: white; padding: 20px; border-radius: 15px; display: flex; justify-content: space-between; border-bottom: 5px solid var(--cba-orange); }
-        .controls { background: white; padding: 15px; border-radius: 12px; margin: 20px 0; display: flex; gap: 10px; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 15px; overflow: hidden; }
-        th { background: #f8f9fa; padding: 15px; text-align: left; font-size: 11px; color: #888; border-bottom: 2px solid #eee; }
-        td { padding: 12px; border-bottom: 1px solid #f1f1f1; font-size: 13px; }
-        button { padding: 10px; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; }
+        
+        header { 
+            background: var(--cba-blue); 
+            color: white; 
+            padding: 25px; 
+            border-radius: 15px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-bottom: 5px solid var(--cba-orange);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Inversão: Total na Esquerda */
+        .stats-box {
+            background: rgba(255,255,255,0.2);
+            padding: 15px 25px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid var(--cba-orange);
+        }
+        .stats-box strong { font-size: 32px; display: block; }
+        .stats-box span { font-size: 10px; text-transform: uppercase; font-weight: bold; }
+
+        /* Título e Logo na Direita */
+        .header-title { text-align: right; display: flex; align-items: center; gap: 15px; }
+        .header-title h1 { margin: 0; font-size: 1.2rem; text-transform: uppercase; }
+        .header-title img { width: 50px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+
+        .controls { 
+            background: white; 
+            padding: 15px; 
+            border-radius: 12px; 
+            margin: 20px 0; 
+            display: flex; 
+            gap: 10px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        input#lupa { flex-grow: 1; padding: 12px; border: 2px solid #eee; border-radius: 8px; font-size: 14px; outline: none; }
+        input#lupa:focus { border-color: var(--cba-orange); }
+        
+        button { padding: 12px 18px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 5px; }
         .btn-excel { background: #2e7d32; color: white; }
+        .btn-refresh { background: var(--cba-blue); color: white; }
+
+        .table-container { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8f9fa; padding: 15px; text-align: left; font-size: 11px; text-transform: uppercase; color: #888; border-bottom: 2px solid #eee; }
+        td { padding: 12px 15px; border-bottom: 1px solid #f1f1f1; font-size: 13px; color: #333; }
+        tr:hover { background-color: #fff9f4; }
+
+        .btn-excluir { color: var(--danger); background: none; border: 1px solid #ffcdd2; padding: 5px; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
+
 <header>
-    <div><h1>Controle Dermato 2026</h1><p>CBA X</p></div>
-    <div style="background:rgba(255,255,255,0.2); padding:10px; border-radius:10px;">Total: <strong id="total">0</strong></div>
+    <div class="stats-box">
+        <span>Total Agendado</span>
+        <strong id="total">0</strong>
+    </div>
+    
+    <div class="header-title">
+        <div>
+            <h1>Controle Dermato 2026</h1>
+            <p style="margin:0; font-size: 0.7rem; opacity: 0.8;">CBA X - Gestão de Vagas</p>
+        </div>
+        <img src="https://raw.githubusercontent.com/gestaob6cbax/INSPECAO-MEDICA-CBA-X-2026/main/logo_cba_x.png" alt="Logo CBA X">
+    </div>
 </header>
+
 <div class="controls">
-    <input type="text" id="lupa" placeholder="🔍 Filtrar..." onkeyup="filtrar()" style="flex-grow:1; padding:10px;">
-    <button class="btn-excel" onclick="baixarExcel()">📥 EXCEL</button>
-    <button onclick="carregar()">🔄 Atualizar</button>
+    <input type="text" id="lupa" placeholder="🔍 Filtrar por Nome, RG, Unidade ou Data..." onkeyup="filtrar()">
+    <button class="btn-refresh" onclick="carregar()">🔄 Atualizar</button>
+    <button class="btn-excel" onclick="baixarExcel()">📥 Baixar Excel</button>
 </div>
-<table>
-    <thead><tr><th>Data</th><th>Unidade</th><th>Posto</th><th>Nome</th><th>RG</th><th>Ações</th></tr></thead>
-    <tbody id="tabelaBody"></tbody>
-</table>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Unidade Lotação</th>
+                <th>Posto</th>
+                <th>Nome Completo</th>
+                <th>RG</th>
+                <th style="text-align:center;">Ações</th>
+            </tr>
+        </thead>
+        <tbody id="tabelaBody">
+            <tr><td colspan="6" style="text-align:center; padding:30px;">Aguardando dados...</td></tr>
+        </tbody>
+    </table>
+</div>
+
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyDDWZDSNvsXyKDl0T54ROn_pOUSUGheQZw",
@@ -44,20 +117,69 @@
     const db = firebase.firestore();
 
     async function carregar() {
-        const snap = await db.collection("agendamentos").get();
-        let html = "";
-        let count = 0;
-        snap.forEach(doc => {
-            const d = doc.data();
-            html += `<tr><td>${d.data}</td><td>${d.unidadeServe}</td><td>${d.posto}</td><td>${d.nome}</td><td>${d.rg}</td><td><button onclick="excluir('${doc.id}')">🗑️</button></td></tr>`;
-            count++;
-        });
-        document.getElementById("tabelaBody").innerHTML = html;
-        document.getElementById("total").innerText = count;
+        const corpo = document.getElementById("tabelaBody");
+        const totalTxt = document.getElementById("total");
+        corpo.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Sincronizando...</td></tr>";
+        
+        try {
+            const snap = await db.collection("agendamentos").orderBy("timestamp", "desc").get();
+            let html = "";
+            let cont = 0;
+
+            snap.forEach(doc => {
+                const d = doc.data();
+                html += `<tr>
+                    <td><strong>${d.data}</strong></td>
+                    <td>${d.unidadeServe}</td>
+                    <td>${d.posto}</td>
+                    <td>${d.nome}</td>
+                    <td><code>${d.rg}</code></td>
+                    <td style="text-align:center;">
+                        <button class="btn-excluir" onclick="excluirIndividual('${doc.id}')">🗑️</button>
+                    </td>
+                </tr>`;
+                cont++;
+            });
+
+            corpo.innerHTML = html || "<tr><td colspan='6' style='text-align:center;'>Nenhum militar agendado ainda.</td></tr>";
+            totalTxt.innerText = cont;
+
+        } catch (e) {
+            console.error(e);
+            corpo.innerHTML = "<tr><td colspan='6' style='color:red; text-align:center;'>Erro de conexão. Verifique o console.</td></tr>";
+        }
     }
-    async function excluir(id) { if(confirm("Excluir?")) { await db.collection("agendamentos").doc(id).delete(); carregar(); } }
-    function filtrar() { /* mesma lógica de filtro anterior */ }
-    function baixarExcel() { /* mesma lógica de excel anterior */ }
+
+    async function excluirIndividual(id) {
+        if(confirm("Tem certeza que deseja remover este agendamento?")) {
+            await db.collection("agendamentos").doc(id).delete();
+            carregar();
+        }
+    }
+
+    function filtrar() {
+        const termo = document.getElementById("lupa").value.toUpperCase();
+        const linhas = document.querySelectorAll("#tabelaBody tr");
+        linhas.forEach(linha => {
+            linha.style.display = linha.innerText.toUpperCase().includes(termo) ? "" : "none";
+        });
+    }
+
+    function baixarExcel() {
+        let csv = "Data;Unidade;Posto;Nome;RG\n";
+        document.querySelectorAll("#tabelaBody tr").forEach(tr => {
+            const td = tr.querySelectorAll("td");
+            if(td.length > 1) {
+                csv += `${td[0].innerText};${td[1].innerText};${td[2].innerText};${td[3].innerText};${td[4].innerText}\n`;
+            }
+        });
+        const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "Relatorio_Dermato_2026.csv";
+        a.click();
+    }
+
     window.onload = carregar;
 </script>
 </body>
