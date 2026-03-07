@@ -19,15 +19,8 @@
         .vagas-badge { margin-top: 10px; padding: 12px; border-radius: 10px; text-align: center; font-size: 0.9rem; font-weight: bold; display: none; border: 1px solid; }
         .vagas-ok { background: #fff3e0; color: #e65100; border-color: #ffe0b2; }
         .btn-confirmar { background: linear-gradient(135deg, var(--cba-orange) 0%, #ef6c00 100%); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 30px; font-size: 1.1rem; text-transform: uppercase; }
-        
-        /* Estilo do Comprovante Premium */
-        #sucesso { display: none; text-align: center; }
-        .recibo { background: #fff; border: 2px solid #eee; padding: 20px; border-radius: 15px; text-align: left; margin-top: 20px; position: relative; overflow: hidden; }
-        .recibo::before { content: ""; position: absolute; top: 0; left: 0; width: 5px; height: 100%; background: var(--cba-orange); }
-        .recibo p { margin: 8px 0; font-size: 0.9rem; color: #444; border-bottom: 1px solid #f9f9f9; padding-bottom: 5px; }
-        .recibo b { color: var(--cba-blue); font-size: 0.7rem; text-transform: uppercase; display: block; }
-        .recibo span { font-size: 1.1rem; font-weight: bold; color: #222; }
-        .icon-check { font-size: 50px; color: #2e7d32; margin-bottom: 10px; }
+        #sucesso { display: none; text-align: center; padding: 40px 20px; }
+        .icon-check { font-size: 50px; color: #2e7d32; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -42,18 +35,23 @@
 
         <div class="section-title">Dados do Militar</div>
         
-        <label>Onde deseja realizar a inspeção?</label>
-        <select id="unidadeDestino" onchange="atualizarDatas()">
-            <option value="">Selecione o local...</option>
-            <option value="CER">POLICLÍNICA (CER BARRA)</option>
+        <label>Unidade de Lotação</label>
+        <select id="unidadeServe" onchange="atualizarDatas()">
+            <option value="">Selecione sua unidade...</option>
+            <option value="CER">CBA X (SEDE)</option>
+            <option value="CER">CER BARRA</option>
+            <option value="CER">2º GMAR (BARRA)</option>
+            <option value="CER">GBS (BOTAFOGO)</option>
             <option value="3GMAR">3º GMAR (COPACABANA)</option>
             <option value="4GMAR">4º GMAR (ITAIPU)</option>
+            <option value="4GMAR">DBM 6/M (ITAIPU)</option>
             <option value="1GMAR">1º GMAR (BOTAFOGO)</option>
+            <option value="1GMAR">DBM 1/M (PAQUETÁ)</option>
+            <option value="1GMAR">DBM 2/M (PISCINÃO DE RAMOS)</option>
             <option value="RECREIO">DBM 3/M (RECREIO)</option>
+            <option value="RECREIO">DBM 4/M (GUARATIBA)</option>
+            <option value="RECREIO">DBM 5/M (SEPETIBA)</option>
         </select>
-
-        <label>Unidade de Lotação (Onde serve)</label>
-        <input type="text" id="unidadeOrigem" placeholder="EX: 2º GMAR, GBS, CBA X..." oninput="this.value = this.value.toUpperCase()">
         
         <label>Posto / Graduação</label>
         <select id="posto">
@@ -64,10 +62,12 @@
         
         <input type="text" id="nome" placeholder="NOME COMPLETO" oninput="this.value = this.value.toUpperCase()">
         <input type="number" id="rg" placeholder="RG MILITAR">
+        <input type="tel" id="telefone" placeholder="TELEFONE (DDD + NÚMERO)">
+        <input type="email" id="email" placeholder="E-MAIL">
 
         <div class="section-title">Agendamento</div>
         <select id="data" onchange="verificarVagas()">
-            <option value="">Selecione o local acima primeiro...</option>
+            <option value="">Selecione a unidade acima primeiro...</option>
         </select>
 
         <div id="statusVagas" class="vagas-badge"></div>
@@ -76,23 +76,10 @@
 
     <div id="sucesso">
         <div class="icon-check">✅</div>
-        <h2 style="color: var(--cba-blue); margin-bottom: 5px;">AGENDADO COM SUCESSO!</h2>
-        <p style="color: #666; font-size: 0.85rem;">Apresente este comprovante no local.</p>
-        
-        <div class="recibo">
-            <p><b>Militar:</b> <span id="res-nome"></span></p>
-            <p><b>RG:</b> <span id="res-rg"></span></p>
-            <p><b>Posto/Graduação:</b> <span id="res-posto"></span></p>
-            <p><b>Unidade de Origem:</b> <span id="res-origem"></span></p>
-            <p><b>Data da Inspeção:</b> <span id="res-data"></span></p>
-            <p><b>Local:</b> <span id="res-local"></span></p>
-            <p><b>Horário:</b> <span>A partir das 08:00h</span></p>
-        </div>
-        
-        <p style="font-size: 0.75rem; color: red; margin-top: 15px; font-weight: bold;">
-            * Comparecer com a identidade militar.
-        </p>
-        <button class="btn-confirmar" onclick="location.reload()">Sair / Novo Agendamento</button>
+        <h2 style="color: var(--cba-blue);">SUCESSO!</h2>
+        <p>Agendamento realizado para o dia <span id="dataConfirmada"></span>.</p>
+        <p style="font-size: 0.8rem; color: #666;">Compareça à unidade a partir das 08:00h.</p>
+        <button class="btn-confirmar" onclick="location.reload()">Sair / Novo</button>
     </div>
 </div>
 
@@ -117,11 +104,12 @@
     };
 
     function atualizarDatas() {
-        const local = document.getElementById("unidadeDestino").value;
+        const grupo = document.getElementById("unidadeServe").value;
         const combo = document.getElementById("data");
-        combo.innerHTML = '<option value="">Selecione o dia...</option>';
-        if(local) {
-            configDermato[local].datas.forEach(d => {
+        combo.innerHTML = '<option value="">Selecione a data...</option>';
+        document.getElementById("statusVagas").style.display = "none";
+        if(grupo) {
+            configDermato[grupo].datas.forEach(d => {
                 let opt = document.createElement("option");
                 opt.value = d; opt.text = d;
                 combo.add(opt);
@@ -130,63 +118,61 @@
     }
 
     async function verificarVagas() {
-        const local = document.getElementById("unidadeDestino").value;
+        const grupo = document.getElementById("unidadeServe").value;
         const dataSel = document.getElementById("data").value;
         const badge = document.getElementById("statusVagas");
-        if (!local || !dataSel) return;
+        if (!grupo || !dataSel) return;
+
         badge.style.display = "block";
-        badge.innerText = "🔍 Verificando disponibilidade...";
-        const snap = await db.collection("agendamentos_dermato").where("unidadeDestino", "==", local).where("data", "==", dataSel).get();
-        const restam = configDermato[local].limite - snap.size;
-        badge.innerText = `✅ ${restam} VAGAS DISPONÍVEIS`;
+        badge.innerText = "CONTANDO VAGAS...";
         badge.className = "vagas-badge vagas-ok";
+
+        try {
+            const snap = await db.collection("agendamentos_dermato").where("unidadeDestino", "==", grupo).where("data", "==", dataSel).get();
+            const restam = configDermato[grupo].limite - snap.size;
+            badge.innerText = `✅ ${restam} VAGAS DISPONÍVEIS`;
+        } catch (e) {
+            badge.innerText = "Erro ao carregar vagas.";
+        }
     }
 
-    async function salvar() {
+   async function salvar() {
         const btn = document.getElementById("btnSalvar");
-        const localSel = document.getElementById("unidadeDestino");
-        
         const d = {
+            unidadeServe: document.getElementById("unidadeServe").options[document.getElementById("unidadeServe").selectedIndex].text,
+            unidadeDestino: document.getElementById("unidadeServe").value,
+            posto: document.getElementById("posto").value,
             nome: document.getElementById("nome").value.trim().toUpperCase(),
             rg: document.getElementById("rg").value.trim(),
-            posto: document.getElementById("posto").value,
-            unidadeOrigem: document.getElementById("unidadeOrigem").value.trim().toUpperCase(),
-            unidadeDestino: localSel.value,
-            localNome: localSel.options[localSel.selectedIndex].text,
+            telefone: document.getElementById("telefone").value.trim(),
+            email: document.getElementById("email").value.trim().toLowerCase(),
             data: document.getElementById("data").value,
+            tipo: "DERMATOLOGIA",
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        if(!d.nome || !d.rg || !d.data || !d.unidadeOrigem || !d.posto) {
-            alert("Preencha todos os campos!"); return;
+        // Alerta neutro: serve para qualquer posto ou graduação
+        if(!d.nome || !d.rg || !d.data || !d.email || !d.posto) {
+            alert("Atenção: Todos os campos devem ser preenchidos para concluir o agendamento.");
+            return;
         }
 
         btn.disabled = true;
-        btn.innerText = "PROCESSANDO...";
+        btn.innerText = "CONFIRMANDO...";
 
         try {
-            // Verificar se já existe esse RG
-            const check = await db.collection("agendamentos_dermato").where("rg", "==", d.rg).get();
-            if(!check.empty) {
-                alert("Este RG já possui agendamento na Dermatologia!");
-                btn.disabled = false; btn.innerText = "Confirmar Inscrição";
-                return;
-            }
-
             await db.collection("agendamentos_dermato").add(d);
-
-            // Preencher Recibo
-            document.getElementById("res-nome").innerText = d.nome;
-            document.getElementById("res-rg").innerText = d.rg;
-            document.getElementById("res-posto").innerText = d.posto;
-            document.getElementById("res-origem").innerText = d.unidadeOrigem;
-            document.getElementById("res-data").innerText = d.data;
-            document.getElementById("res-local").innerText = d.localNome;
-
+            document.getElementById("dataConfirmada").innerText = d.data;
             document.getElementById("form-content").style.display = "none";
             document.getElementById("sucesso").style.display = "block";
-        } catch (e) { alert("Erro ao salvar."); btn.disabled = false; }
+        } catch (e) {
+            console.error("Erro técnico:", e);
+            alert("Erro ao salvar. Verifique sua conexão e tente novamente.");
+            btn.disabled = false;
+            btn.innerText = "Confirmar Inscrição";
+        }
     }
+
 </script>
 </body>
 </html>
