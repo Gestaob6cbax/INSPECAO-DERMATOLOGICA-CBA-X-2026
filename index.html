@@ -19,8 +19,13 @@
         .vagas-badge { margin-top: 10px; padding: 12px; border-radius: 10px; text-align: center; font-size: 0.9rem; font-weight: bold; display: none; border: 1px solid; }
         .vagas-ok { background: #fff3e0; color: #e65100; border-color: #ffe0b2; }
         .btn-confirmar { background: linear-gradient(135deg, var(--cba-orange) 0%, #ef6c00 100%); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 30px; font-size: 1.1rem; text-transform: uppercase; }
-        #sucesso { display: none; text-align: center; padding: 40px 20px; }
-        .icon-check { font-size: 50px; color: #2e7d32; margin-bottom: 20px; }
+        
+        /* Estilo do Comprovante */
+        #sucesso { display: none; text-align: center; }
+        .recibo { background: #f9f9f9; border: 2px dashed #ccc; padding: 20px; border-radius: 10px; text-align: left; margin-top: 20px; }
+        .recibo p { margin: 5px 0; font-size: 0.9rem; color: #333; }
+        .recibo b { color: var(--cba-blue); }
+        .icon-check { font-size: 50px; color: #2e7d32; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -35,7 +40,7 @@
 
         <div class="section-title">Dados do Militar</div>
         
-        <label>Unidade de Origem (Onde serve)</label>
+        <label>Unidade de Origem</label>
         <select id="unidadeServe" onchange="atualizarDatas()">
             <option value="">Selecione sua unidade...</option>
             <option value="CER">CBA X (SEDE)</option>
@@ -66,7 +71,6 @@
         <input type="email" id="email" placeholder="E-MAIL">
 
         <div class="section-title">Agendamento</div>
-        <label>Selecione a Data Disponível</label>
         <select id="data" onchange="verificarVagas()">
             <option value="">Aguardando unidade...</option>
         </select>
@@ -77,9 +81,21 @@
 
     <div id="sucesso">
         <div class="icon-check">✅</div>
-        <h2 style="color: var(--cba-blue);">SUCESSO!</h2>
-        <p>Agendamento realizado para o dia <span id="dataConfirmada"></span>.</p>
-        <p style="font-size: 0.8rem; color: #666;">Compareça à unidade a partir das 08:00h.</p>
+        <h2 style="color: var(--cba-blue); margin-bottom: 5px;">AGENDADO!</h2>
+        <p style="color: #666; font-size: 0.9rem;">Guarde os dados do seu agendamento:</p>
+        
+        <div class="recibo">
+            <p><b>Militar:</b> <span id="res-nome"></span></p>
+            <p><b>RG:</b> <span id="res-rg"></span></p>
+            <p><b>Posto:</b> <span id="res-posto"></span></p>
+            <p><b>Data:</b> <span id="res-data"></span></p>
+            <p><b>Local:</b> POLICLÍNICA / UNIDADE CBA X</p>
+            <p><b>Horário:</b> A partir das 08:00h</p>
+        </div>
+        
+        <p style="font-size: 0.75rem; color: red; margin-top: 15px; font-weight: bold;">
+            * Apresente-se com o documento de identidade militar.
+        </p>
         <button class="btn-confirmar" onclick="location.reload()">Sair / Novo</button>
     </div>
 </div>
@@ -107,28 +123,21 @@
     function atualizarDatas() {
         const grupo = document.getElementById("unidadeServe").value;
         const combo = document.getElementById("data");
-        
-        // Limpa e prepara o campo de data
         combo.innerHTML = '';
         document.getElementById("statusVagas").style.display = "none";
 
         if(grupo && configDermato[grupo]) {
-            // Se tem unidade, coloca as datas direto
             let optPadrao = document.createElement("option");
-            optPadrao.value = "";
-            optPadrao.text = "Selecione o dia...";
+            optPadrao.value = ""; optPadrao.text = "Selecione o dia...";
             combo.add(optPadrao);
-
             configDermato[grupo].datas.forEach(d => {
                 let opt = document.createElement("option");
                 opt.value = d; opt.text = d;
                 combo.add(opt);
             });
         } else {
-            // Se não selecionou unidade, avisa
             let optAviso = document.createElement("option");
-            optAviso.value = "";
-            optAviso.text = "Escolha a unidade acima primeiro";
+            optAviso.value = ""; optAviso.text = "Escolha a unidade acima primeiro";
             combo.add(optAviso);
         }
     }
@@ -138,27 +147,19 @@
         const dataSel = document.getElementById("data").value;
         const badge = document.getElementById("statusVagas");
         if (!grupo || !dataSel) return;
-
         badge.style.display = "block";
         badge.innerText = "CONTANDO VAGAS...";
-        badge.className = "vagas-badge vagas-ok";
-
         try {
-            const snap = await db.collection("agendamentos_dermato")
-                                .where("unidadeDestino", "==", grupo)
-                                .where("data", "==", dataSel)
-                                .get();
+            const snap = await db.collection("agendamentos_dermato").where("unidadeDestino", "==", grupo).where("data", "==", dataSel).get();
             const restam = configDermato[grupo].limite - snap.size;
             badge.innerText = `✅ ${restam} VAGAS DISPONÍVEIS`;
-        } catch (e) {
-            badge.innerText = "Erro ao carregar vagas.";
-        }
+            badge.className = "vagas-badge vagas-ok";
+        } catch (e) { badge.innerText = "Erro ao carregar vagas."; }
     }
 
    async function salvar() {
         const btn = document.getElementById("btnSalvar");
         const selUnidade = document.getElementById("unidadeServe");
-        
         const d = {
             unidadeServe: selUnidade.options[selUnidade.selectedIndex].text,
             unidadeDestino: selUnidade.value,
@@ -173,7 +174,7 @@
         };
 
         if(!d.nome || !d.rg || !d.data || !d.email || !d.posto || d.unidadeDestino === "") {
-            alert("Atenção: Todos os campos devem ser preenchidos para concluir o agendamento.");
+            alert("Atenção: Preencha todos os campos.");
             return;
         }
 
@@ -182,11 +183,17 @@
 
         try {
             await db.collection("agendamentos_dermato").add(d);
-            document.getElementById("dataConfirmada").innerText = d.data;
+            
+            // Preenche o comprovante
+            document.getElementById("res-nome").innerText = d.nome;
+            document.getElementById("res-rg").innerText = d.rg;
+            document.getElementById("res-posto").innerText = d.posto;
+            document.getElementById("res-data").innerText = d.data;
+
             document.getElementById("form-content").style.display = "none";
             document.getElementById("sucesso").style.display = "block";
         } catch (e) {
-            alert("Erro ao salvar. Verifique sua conexão.");
+            alert("Erro ao salvar.");
             btn.disabled = false;
             btn.innerText = "Confirmar Inscrição";
         }
