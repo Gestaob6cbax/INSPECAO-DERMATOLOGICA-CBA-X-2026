@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Painel ADM - Dermatologia 2026</title>
+    <title>ADM - Dermatologia 2026 - CBA X</title>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -23,9 +23,9 @@
         .btn-atualizar { background: #0a2c6d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
         table { width: 100%; background: white; border-collapse: collapse; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         th { background: #f8f9fa; padding: 12px; font-size: 0.7rem; color: #999; text-align: left; border-bottom: 2px solid #eee; text-transform: uppercase; }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.85rem; color: #333; }
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.82rem; color: #333; }
         tr:hover { background: #fcfcfc; }
-        .btn-del { background: none; border: none; cursor: pointer; color: #d32f2f; font-size: 1.1rem; }
+        .btn-del { background: none; border: none; cursor: pointer; color: #d32f2f; font-size: 1rem; }
     </style>
 </head>
 <body>
@@ -59,12 +59,13 @@
     <thead>
         <tr>
             <th>DATA</th>
-            <th>ORIGEM (Serve)</th>
-            <th>POLO (Local)</th>
+            <th>ORIGEM</th>
+            <th>POLO</th>
             <th>POSTO</th>
             <th>NOME COMPLETO</th>
             <th>RG</th>
-            <th>CONTATO</th>
+            <th>TELEFONE</th>
+            <th>E-MAIL</th>
             <th>AÇÕES</th>
         </tr>
     </thead>
@@ -72,14 +73,7 @@
 </table>
 
 <script>
-    const firebaseConfig = { 
-        apiKey: "AIzaSyBkq2D8JFuxzPTI2z_Iirg3rYfSFfPJRXY", 
-        authDomain: "inspecao-saude-cbax.firebaseapp.com", 
-        projectId: "inspecao-saude-cbax", 
-        storageBucket: "inspecao-saude-cbax.firebasestorage.app", 
-        messagingSenderId: "1011281662526", 
-        appId: "1:1011281662526:web:1028e8a8d140684e98376f" 
-    };
+    const firebaseConfig = { apiKey: "AIzaSyBkq2D8JFuxzPTI2z_Iirg3rYfSFfPJRXY", authDomain: "inspecao-saude-cbax.firebaseapp.com", projectId: "inspecao-saude-cbax", storageBucket: "inspecao-saude-cbax.firebasestorage.app", messagingSenderId: "1011281662526", appId: "1:1011281662526:web:1028e8a8d140684e98376f" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
@@ -88,12 +82,7 @@
     async function carregarDados() {
         const snap = await db.collection("agendamentos_dermato").orderBy("timestamp", "desc").get();
         todosOsDados = [];
-        
-        snap.forEach(doc => {
-            const d = doc.data();
-            todosOsDados.push({ id: doc.id, ...d });
-        });
-        
+        snap.forEach(doc => todosOsDados.push({ id: doc.id, ...doc.data() }));
         renderizar(todosOsDados);
     }
 
@@ -106,12 +95,13 @@
             
             html += `<tr>
                 <td><strong>${d.data}</strong></td>
-                <td>${d.unidadeOrigem || 'CBA X'}</td>
+                <td>${d.unidadeOrigem || '-'}</td>
                 <td><small>${d.localTexto || d.local}</small></td>
                 <td>${d.posto}</td>
                 <td><strong>${d.nome}</strong></td>
                 <td>${d.rg}</td>
-                <td style="font-size: 0.7rem;">${d.telefone || '-'}<br>${d.email || '-'}</td>
+                <td>${d.telefone || '-'}</td>
+                <td>${d.email || '-'}</td>
                 <td><button class="btn-del" onclick="excluir('${d.id}')">🗑️</button></td>
             </tr>`;
         });
@@ -125,28 +115,26 @@
     function filtrar() {
         const termo = document.getElementById("busca").value.toUpperCase();
         const filtrados = todosOsDados.filter(d => 
-            d.nome.includes(termo) || 
-            d.rg.includes(termo) || 
-            d.unidadeOrigem.toUpperCase().includes(termo) ||
+            d.nome.includes(termo) || d.rg.includes(termo) || 
+            (d.unidadeOrigem && d.unidadeOrigem.toUpperCase().includes(termo)) ||
             (d.localTexto && d.localTexto.toUpperCase().includes(termo))
         );
         renderizar(filtrados);
     }
 
     async function excluir(id) {
-        if(confirm("Deseja realmente excluir este agendamento?")) {
+        if(confirm("Excluir este agendamento?")) {
             await db.collection("agendamentos_dermato").doc(id).delete();
             carregarDados();
         }
     }
 
     async function resetarSistema() {
-        if(confirm("⚠️ ATENÇÃO: Isso apagará TODOS os dados permanentemente. Confirma?")) {
+        if(confirm("⚠️ ATENÇÃO: Isso apagará TODOS os dados. Confirma?")) {
             const snap = await db.collection("agendamentos_dermato").get();
             const batch = db.batch();
             snap.forEach(doc => batch.delete(doc.ref));
             await batch.commit();
-            alert("Sistema limpo com sucesso!");
             carregarDados();
         }
     }
