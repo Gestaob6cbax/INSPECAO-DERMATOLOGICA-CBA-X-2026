@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agendamento Dermatológico 2026</title>
-    
+    <title>Dermatologia 2026 - CBA X</title>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    
     <style>
         :root { --cba-orange: #fb8c00; --cba-blue: #0a2c6d; }
         body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 0; padding: 10px; display: flex; justify-content: center; }
@@ -37,14 +35,22 @@
 
         <div class="section-title">Dados do Militar</div>
         
-        <label>Onde você serve?</label>
+        <label>Unidade de Lotação</label>
         <select id="unidadeServe" onchange="atualizarDatas()">
             <option value="">Selecione sua unidade...</option>
-            <option value="CER">CBA X (SEDE) / CER / BARRA / GBS</option>
+            <option value="CER">CBA X (SEDE)</option>
+            <option value="CER">CER BARRA</option>
+            <option value="CER">2º GMAR (BARRA)</option>
+            <option value="CER">GBS (BOTAFOGO)</option>
             <option value="3GMAR">3º GMAR (COPACABANA)</option>
-            <option value="4GMAR">4º GMAR / DBM 6/M (ITAIPU)</option>
-            <option value="1GMAR">1º GMAR / DBM 1/M / DBM 2/M</option>
-            <option value="RECREIO">DBM 3/M / DBM 4/M / DBM 5/M</option>
+            <option value="4GMAR">4º GMAR (ITAIPU)</option>
+            <option value="4GMAR">DBM 6/M (ITAIPU)</option>
+            <option value="1GMAR">1º GMAR (BOTAFOGO)</option>
+            <option value="1GMAR">DBM 1/M (PAQUETÁ)</option>
+            <option value="1GMAR">DBM 2/M (PISCINÃO DE RAMOS)</option>
+            <option value="RECREIO">DBM 3/M (RECREIO)</option>
+            <option value="RECREIO">DBM 4/M (GUARATIBA)</option>
+            <option value="RECREIO">DBM 5/M (SEPETIBA)</option>
         </select>
         
         <label>Posto / Graduação</label>
@@ -57,8 +63,9 @@
         <input type="text" id="nome" placeholder="NOME COMPLETO" oninput="this.value = this.value.toUpperCase()">
         <input type="number" id="rg" placeholder="RG MILITAR">
         <input type="tel" id="telefone" placeholder="TELEFONE (DDD + NÚMERO)">
+        <input type="email" id="email" placeholder="E-MAIL">
 
-        <div class="section-title">Data da Consulta</div>
+        <div class="section-title">Agendamento</div>
         <select id="data" onchange="verificarVagas()">
             <option value="">Selecione a unidade acima primeiro...</option>
         </select>
@@ -70,14 +77,13 @@
     <div id="sucesso">
         <div class="icon-check">✅</div>
         <h2 style="color: var(--cba-blue);">SUCESSO!</h2>
-        <p>Agendamento realizado com sucesso para o dia <span id="dataConfirmada"></span>.</p>
+        <p>Agendamento realizado para o dia <span id="dataConfirmada"></span>.</p>
         <p style="font-size: 0.8rem; color: #666;">Compareça à unidade a partir das 08:00h.</p>
-        <button class="btn-confirmar" onclick="location.reload()">Novo Agendamento</button>
+        <button class="btn-confirmar" onclick="location.reload()">Sair / Novo</button>
     </div>
 </div>
 
 <script>
-    // Configurações do Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyDDWZDSNvsXyKDl0T54ROn_pOUSUGheQZw",
         authDomain: "inspecao-dermatologia-cbax.firebaseapp.com",
@@ -100,10 +106,9 @@
     function atualizarDatas() {
         const grupo = document.getElementById("unidadeServe").value;
         const combo = document.getElementById("data");
-        combo.innerHTML = '<option value="">Selecione o dia...</option>';
+        combo.innerHTML = '<option value="">Selecione a data...</option>';
         document.getElementById("statusVagas").style.display = "none";
-        
-        if(grupo && configDermato[grupo]) {
+        if(grupo) {
             configDermato[grupo].datas.forEach(d => {
                 let opt = document.createElement("option");
                 opt.value = d; opt.text = d;
@@ -116,20 +121,19 @@
         const grupo = document.getElementById("unidadeServe").value;
         const dataSel = document.getElementById("data").value;
         const badge = document.getElementById("statusVagas");
-
         if (!grupo || !dataSel) return;
 
         badge.style.display = "block";
         badge.innerText = "CONTANDO VAGAS...";
         badge.className = "vagas-badge vagas-ok";
 
-        const snap = await db.collection("agendamentos")
-            .where("unidadeDestino", "==", grupo)
-            .where("data", "==", dataSel)
-            .get();
-
-        const restam = configDermato[grupo].limite - snap.size;
-        badge.innerText = `✅ ${restam} VAGAS DISPONÍVEIS`;
+        try {
+            const snap = await db.collection("agendamentos").where("unidadeDestino", "==", grupo).where("data", "==", dataSel).get();
+            const restam = configDermato[grupo].limite - snap.size;
+            badge.innerText = `✅ ${restam} VAGAS DISPONÍVEIS`;
+        } catch (e) {
+            badge.innerText = "Erro ao carregar vagas.";
+        }
     }
 
     async function salvar() {
@@ -138,15 +142,16 @@
             unidadeServe: document.getElementById("unidadeServe").options[document.getElementById("unidadeServe").selectedIndex].text,
             unidadeDestino: document.getElementById("unidadeServe").value,
             posto: document.getElementById("posto").value,
-            nome: document.getElementById("nome").value.trim(),
+            nome: document.getElementById("nome").value.trim().toUpperCase(),
             rg: document.getElementById("rg").value.trim(),
             telefone: document.getElementById("telefone").value.trim(),
+            email: document.getElementById("email").value.trim().toLowerCase(),
             data: document.getElementById("data").value,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        if(!d.nome || !d.rg || !d.data || !d.posto) {
-            alert("Capitã, faltou preencher alguma coisa!");
+        if(!d.nome || !d.rg || !d.data || !d.email) {
+            alert("Capitã, por favor preencha todos os campos, incluindo o e-mail!");
             return;
         }
 
@@ -159,7 +164,7 @@
             document.getElementById("form-content").style.display = "none";
             document.getElementById("sucesso").style.display = "block";
         } catch (e) {
-            alert("Erro ao salvar. Tente novamente.");
+            alert("Erro ao salvar agendamento.");
             btn.disabled = false;
             btn.innerText = "Confirmar Inscrição";
         }
