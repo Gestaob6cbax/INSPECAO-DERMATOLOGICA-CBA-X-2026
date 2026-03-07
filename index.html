@@ -39,14 +39,22 @@
     <div id="form-content">
         <div class="section-title">Identificação do Militar</div>
 
-        <label>Unidade de Origem (Onde serve)</label>
-        <select id="unidadeServe" onchange="atualizarDatasEspecíficas()">
-            <option value="">Selecione sua lotação...</option>
-            <option value="CER">CER BARRA / 2º GMAR / GBS</option>
-            <option value="3GMAR">3º GMAR - COPACABANA</option>
-            <option value="4GMAR">4º GMAR - ITAIPU / DBM ITAIPU</option>
-            <option value="1GMAR">1º GMAR - BOTAFOGO / DBM 1 e 2</option>
-            <option value="RECREIO">RECREIO (DBM 3, 4 e 5) / CBA X</option>
+        <label>Unidade de Lotação (Onde você serve)</label>
+        <select id="unidadeServe" onchange="atualizarDatasPeloGrupo()">
+            <option value="">Selecione sua unidade...</option>
+            <option value="CER">CBA X (SEDE)</option>
+            <option value="CER">CER BARRA</option>
+            <option value="CER">2º GMAR (BARRA)</option>
+            <option value="CER">GBS (BOTAFOGO)</option>
+            <option value="3GMAR">3º GMAR (COPACABANA)</option>
+            <option value="4GMAR">4º GMAR (ITAIPU)</option>
+            <option value="4GMAR">DBM 6/M (ITAIPU)</option>
+            <option value="1GMAR">1º GMAR (BOTAFOGO)</option>
+            <option value="1GMAR">DBM 1/M (PAQUETÁ)</option>
+            <option value="1GMAR">DBM 2/M (PISCINÃO DE RAMOS)</option>
+            <option value="RECREIO">DBM 3/M (RECREIO)</option>
+            <option value="RECREIO">DBM 4/M (GUARATIBA)</option>
+            <option value="RECREIO">DBM 5/M (SEPETIBA)</option>
         </select>
         
         <label>Posto / Graduação</label>
@@ -63,19 +71,18 @@
 
         <div class="section-title">Local e Data</div>
         
-        <label>Data da Consulta (Livre Demanda)</label>
-        <select id="data" onchange="verificarVagasReal()">
+        <label>Data da Consulta</label>
+        <select id="data" onchange="verificarVagasDermato()">
             <option value="">Selecione a unidade acima primeiro...</option>
         </select>
 
         <div id="statusVagas" class="vagas-badge"></div>
 
-        <button id="btnSalvar" class="btn-confirmar" onclick="salvar()">Confirmar Agendamento</button>
+        <button id="btnSalvar" class="btn-confirmar" onclick="salvarDermato()">Confirmar Agendamento</button>
     </div>
 </div>
 
 <script>
-    // Configurações do Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyDDWZDSNvsXyKDl0T54ROn_pOUSUGheQZw",
         authDomain: "inspecao-dermatologia-cbax.firebaseapp.com",
@@ -87,7 +94,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Definição das Regras de Negócio (Efetivo dividido por datas)
+    // Mapeamento de Datas e Limites por Grupo
     const configuracaoDermato = {
         "CER": { datas: ["07/04/2026", "14/04/2026", "28/04/2026"], limite: 87 },
         "3GMAR": { datas: ["09/04/2026", "05/05/2026", "18/06/2026"], limite: 67 },
@@ -96,14 +103,14 @@
         "RECREIO": { datas: ["22/06/2026", "06/07/2026", "20/07/2026"], limite: 87 }
     };
 
-    function atualizarDatasEspecíficas() {
-        const uni = document.getElementById("unidadeServe").value;
+    function atualizarDatasPeloGrupo() {
+        const grupo = document.getElementById("unidadeServe").value;
         const comboData = document.getElementById("data");
         comboData.innerHTML = '<option value="">Selecione a data...</option>';
         document.getElementById("statusVagas").style.display = "none";
         
-        if(uni && configuracaoDermato[uni]) {
-            configuracaoDermato[uni].datas.forEach(d => {
+        if(grupo && configuracaoDermato[grupo]) {
+            configuracaoDermato[grupo].datas.forEach(d => {
                 let opt = document.createElement("option");
                 opt.value = d; opt.text = d;
                 comboData.add(opt);
@@ -111,73 +118,63 @@
         }
     }
 
-    async function verificarVagasReal() {
-        const uni = document.getElementById("unidadeServe").value;
+    async function verificarVagasDermato() {
+        const grupo = document.getElementById("unidadeServe").value;
         const dataSel = document.getElementById("data").value;
         const badge = document.getElementById("statusVagas");
         const btn = document.getElementById("btnSalvar");
 
-        if (!uni || !dataSel) return;
+        if (!grupo || !dataSel) return;
 
         badge.style.display = "block";
         badge.innerText = "🔍 CONSULTANDO VAGAS...";
         badge.className = "vagas-badge vagas-ok";
 
         const snapshot = await db.collection("agendamentos")
-            .where("unidadeDestino", "==", uni)
+            .where("unidadeDestino", "==", grupo)
             .where("data", "==", dataSel)
             .get();
 
-        const limiteVagas = configuracaoDermato[uni].limite;
+        const limiteVagas = configuracaoDermato[grupo].limite;
         const restam = limiteVagas - snapshot.size;
 
         if (restam <= 0) {
-            badge.innerText = "❌ DATA ESGOTADA PARA SUA UNIDADE";
+            badge.innerText = "❌ ESGOTADO PARA ESTA DATA";
             badge.className = "vagas-badge vagas-esgotado";
             btn.disabled = true;
         } else {
-            badge.innerText = `✅ ${restam} VAGAS DISPONÍVEIS NESTA DATA`;
+            badge.innerText = `✅ ${restam} VAGAS DISPONÍVEIS`;
             badge.className = "vagas-badge vagas-ok";
             btn.disabled = false;
         }
     }
 
-    async function salvar() {
+    async function salvarDermato() {
+        const selectUnidade = document.getElementById("unidadeServe");
         const d = {
-            unidadeServe: document.getElementById("unidadeServe").value,
+            unidadeServe: selectUnidade.options[selectUnidade.selectedIndex].text, // Nome real da unidade
+            unidadeDestino: selectUnidade.value, // Grupo técnico para controle de vagas
             posto: document.getElementById("posto").value,
             nome: document.getElementById("nome").value.trim(),
             rg: document.getElementById("rg").value.trim(),
             telefone: document.getElementById("telefone").value.trim(),
             email: document.getElementById("email").value.trim().toLowerCase(),
-            unidadeDestino: document.getElementById("unidadeServe").value, // O local de atendimento é vinculado à unidade dele
             data: document.getElementById("data").value,
             tipo: "DERMATOLOGIA",
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        if (Object.values(d).some(v => !v)) return alert("Por favor, preencha todos os campos!");
-
-        const btn = document.getElementById("btnSalvar");
-        btn.disabled = true;
-        btn.innerText = "PROCESSANDO...";
+        if (Object.values(d).some(v => !v)) return alert("Preencha todos os campos!");
 
         try {
             const check = await db.collection("agendamentos").where("rg", "==", d.rg).get();
-            if (!check.empty) {
-                alert("Este RG já possui agendamento!");
-                btn.disabled = false;
-                btn.innerText = "Confirmar Agendamento";
-                return;
-            }
+            if (!check.empty) return alert("Este RG já possui agendamento!");
 
             await db.collection("agendamentos").add(d);
             alert("Agendamento Dermatológico realizado com sucesso!");
             location.reload();
         } catch (e) { 
-            alert("Erro ao conectar com o banco de dados.");
-            btn.disabled = false;
-            btn.innerText = "Confirmar Agendamento";
+            alert("Erro ao salvar."); 
         }
     }
 </script>
