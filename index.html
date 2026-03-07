@@ -9,32 +9,23 @@
     <style>
         :root { --cba-orange: #fb8c00; --cba-blue: #0a2c6d; }
         body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 0; padding: 10px; display: flex; justify-content: center; }
-        
         .premium-card { width: 100%; max-width: 480px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); border-top: 8px solid var(--cba-orange); }
-        
         header { text-align: center; margin-bottom: 25px; }
         header img { width: 80px; }
         header h2 { color: var(--cba-blue); margin: 10px 0 5px; font-size: 1.3rem; text-transform: uppercase; }
         header p { font-weight: bold; font-size: 0.8rem; color: #666; margin: 0; }
-
         .section-title { background: var(--cba-orange); color: white; padding: 8px 15px; font-size: 0.75rem; font-weight: bold; border-radius: 5px; margin-top: 25px; text-transform: uppercase; text-align: center; }
-        
         label { display: block; margin-top: 15px; font-weight: 700; color: #333; font-size: 0.7rem; text-transform: uppercase; }
         input, select { width: 100%; padding: 14px; margin-top: 5px; border: 2px solid #dfe4ea; border-radius: 10px; box-sizing: border-box; font-size: 16px; background-color: #fcfcfc; display: block; }
-        
         .btn-confirmar { background: var(--cba-orange); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 30px; font-size: 1.1rem; text-transform: uppercase; }
-
-        /* COMPROVANTE LARANJA */
         #sucesso { display: none; text-align: center; }
         .caixa-recibo { border: 2px dashed var(--cba-orange); padding: 25px; border-radius: 15px; margin: 20px 0; background: #fffdfd; text-align: left; }
         .status-ok { color: var(--cba-orange); font-weight: bold; text-align: center; display: block; margin-bottom: 15px; font-size: 1.1rem; }
         .militar-nome { color: var(--cba-blue); font-weight: 900; font-size: 1.1rem; text-transform: uppercase; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
         .info-linha { font-size: 0.9rem; margin: 8px 0; color: #333; }
         .info-linha b { color: var(--cba-blue); }
-
         .btn-imprimir { background: #555; color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
         .link-voltar { display: block; margin-top: 15px; color: var(--cba-blue); font-size: 0.8rem; text-decoration: underline; cursor: pointer; }
-
         @media print { .btn-imprimir, .link-voltar, .btn-confirmar { display: none; } .premium-card { border: none; box-shadow: none; } }
     </style>
 </head>
@@ -48,7 +39,7 @@
             <p>CBA X - SALVAMENTO MARÍTIMO</p>
         </header>
 
-        <div class="section-title">Dados do Militar</div>
+        <div class="section-title">Identificação Militar</div>
         
         <label>Unidade de Origem (Onde serve)</label>
         <select id="unidadeServe">
@@ -62,7 +53,7 @@
         <select id="posto">
             <option value="">Selecione...</option>
             <option>SD BM</option><option>CB BM</option><option>3º SGT BM</option><option>2º SGT BM</option><option>1º SGT BM</option><option>SUBTEN BM</option>
-            <option>OFICIAL</option>
+            <option>2º TEN BM</option><option>1º TEN BM</option><option>CAP BM</option><option>MAJ BM</option><option>TEN CEL BM</option><option>CEL BM</option>
         </select>
 
         <input type="text" id="nome" placeholder="NOME COMPLETO" oninput="this.value = this.value.toUpperCase()">
@@ -86,7 +77,6 @@
             <h2>Inspeção Periódica 2026</h2>
             <p>CBA X - JUNTA DE SAÚDE</p>
         </header>
-
         <div class="caixa-recibo">
             <span class="status-ok">✅ AGENDAMENTO CONFIRMADO</span>
             <div class="militar-nome" id="res-nome"></div>
@@ -96,22 +86,14 @@
             <div class="info-linha"><b>Data:</b> <span id="res-data"></span></div>
             <div class="info-linha"><b>Horário:</b> A partir das 08:00h</div>
         </div>
-
         <button class="btn-imprimir" onclick="window.print()">📥 Imprimir / Salvar PDF</button>
         <span class="link-voltar" onclick="location.reload()">Realizar outro agendamento</span>
     </div>
 </div>
 
 <script>
-    const firebaseConfig = { 
-        apiKey: "AIzaSyBkq2D8JFuxzPTI2z_Iirg3rYfSFfPJRXY",
-        authDomain: "inspecao-saude-cbax.firebaseapp.com",
-        projectId: "inspecao-saude-cbax",
-        storageBucket: "inspecao-saude-cbax.firebasestorage.app",
-        messagingSenderId: "1011281662526",
-        appId: "1:1011281662526:web:1028e8a8d140684e98376f"
-    };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const firebaseConfig = { apiKey: "AIzaSyBkq2D8JFuxzPTI2z_Iirg3rYfSFfPJRXY", authDomain: "inspecao-saude-cbax.firebaseapp.com", projectId: "inspecao-saude-cbax", storageBucket: "inspecao-saude-cbax.firebasestorage.app", messagingSenderId: "1011281662526", appId: "1:1011281662526:web:1028e8a8d140684e98376f" };
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
     async function salvar() {
@@ -127,8 +109,8 @@
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        if(!d.unidadeOrigem || !d.nome || !d.rg || !d.data) {
-            alert("Preencha todos os campos obrigatórios.");
+        if(!d.unidadeOrigem || !d.nome || !d.rg || !d.data || !d.posto) {
+            alert("Atenção: Preencha todos os campos!");
             return;
         }
 
@@ -141,7 +123,6 @@
             document.getElementById("res-rg").innerText = d.rg;
             document.getElementById("res-unidade").innerText = d.unidadeOrigem;
             document.getElementById("res-data").innerText = d.data;
-
             document.getElementById("form-content").style.display = "none";
             document.getElementById("sucesso").style.display = "block";
             window.scrollTo(0,0);
