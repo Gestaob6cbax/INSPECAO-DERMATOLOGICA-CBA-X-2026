@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADM Premium - Dermatologia 2026</title>
+    <title>ADM Premium - Dermato 2026</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -13,6 +13,7 @@
         :root { --cba-orange: #fb8c00; --cba-blue: #0a2c6d; --bg: #f4f7f6; --success: #2e7d32; --danger: #d32f2f; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; }
         
+        /* Cabeçalho */
         header { 
             background: white; padding: 20px; border-radius: 15px; 
             display: flex; justify-content: space-between; align-items: center; 
@@ -22,11 +23,12 @@
         .header-title h1 { margin: 0; color: var(--cba-blue); font-size: 1.4rem; text-transform: uppercase; }
         .header-title p { margin: 5px 0 0; color: #666; font-weight: bold; font-size: 0.8rem; }
 
+        /* Dashboard */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .stat-card { background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-bottom: 5px solid var(--cba-orange); }
-        .stat-card h3 { margin: 0; font-size: 0.75rem; color: #888; text-transform: uppercase; }
         .stat-card p { margin: 10px 0 0; font-size: 2.2rem; font-weight: bold; color: var(--cba-blue); }
 
+        /* Controles */
         .controls { background: white; padding: 15px; border-radius: 15px; display: flex; gap: 12px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); align-items: center; }
         #busca { flex-grow: 1; padding: 12px; border: 2px solid #eee; border-radius: 10px; font-size: 1rem; outline: none; }
         
@@ -35,12 +37,15 @@
         .btn-refresh { background: var(--cba-blue); }
         .btn-mass-del { background: var(--danger); display: none; }
 
+        /* Tabela */
         .table-container { background: white; border-radius: 15px; overflow-x: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         table { width: 100%; border-collapse: collapse; min-width: 1100px; }
         th { background: #f8f9fa; padding: 15px; text-align: left; font-size: 0.65rem; color: #888; text-transform: uppercase; border-bottom: 2px solid #eee; }
         td { padding: 15px; border-bottom: 1px solid #f1f1f1; font-size: 0.85rem; color: #333; }
         tr:hover { background: #fffaf4; }
         .badge-origem { background: #eee; padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; color: #444; }
+        .btn-lixeira { background: none; border: none; cursor: pointer; font-size: 1.3rem; transition: transform 0.2s; }
+        .btn-lixeira:hover { transform: scale(1.2); }
     </style>
 </head>
 <body>
@@ -53,17 +58,17 @@
             <p>COMANDO DE BOMBEIROS DE ÁREA X - CBA X</p>
         </div>
     </div>
-    <button class="btn btn-excel" onclick="exportarExcel()">📥 Baixar Planilha Atualizada</button>
+    <button class="btn btn-excel" onclick="exportarExcel()">📥 Baixar Planilha Excel</button>
 </header>
 
 <div class="stats-grid">
-    <div class="stat-card"><h3>Total de Agendamentos</h3><p id="total">0</p></div>
-    <div class="stat-card"><h3>Militares no CER Barra</h3><p id="totalCER">0</p></div>
-    <div class="stat-card"><h3>Militares nos GMARs/DBMs</h3><p id="totalOutros">0</p></div>
+    <div class="stat-card"><h3>Total Agendados</h3><p id="total">0</p></div>
+    <div class="stat-card"><h3>Local: CER Barra</h3><p id="totalCER">0</p></div>
+    <div class="stat-card"><h3>GMARs / DBMs</h3><p id="totalOutros">0</p></div>
 </div>
 
 <div class="controls">
-    <input type="text" id="busca" placeholder="🔍 Pesquise por RG, Nome, Unidade de Origem ou Data..." onkeyup="filtrar()">
+    <input type="text" id="busca" placeholder="🔍 Pesquise por RG, Nome ou Unidade de Origem..." onkeyup="filtrar()">
     <button id="btnMassDel" class="btn btn-mass-del" onclick="excluirMassa()">🗑️ Excluir Selecionados</button>
     <button class="btn btn-refresh" onclick="carregarDados()">🔄 Atualizar Lista</button>
 </div>
@@ -73,24 +78,25 @@
         <thead>
             <tr>
                 <th width="30"><input type="checkbox" id="checkMaster" onclick="selecionarTodos()"></th>
-                <th>Data Inspeção</th>
-                <th>Local da Inspeção</th>
-                <th>Unidade de Origem</th>
+                <th>Data</th>
+                <th>Local Inspeção</th>
+                <th>Unidade Origem</th>
                 <th>Posto</th>
-                <th>Nome Completo</th>
+                <th>Nome</th>
                 <th>RG</th>
                 <th>Telefone</th>
                 <th>E-mail</th>
-                <th>Ações</th>
+                <th width="50">Ação</th>
             </tr>
         </thead>
         <tbody id="corpoTabela">
-            <tr><td colspan="10" style="text-align:center; padding:40px;">Buscando agendamentos...</td></tr>
+            <tr><td colspan="10" style="text-align:center; padding:30px;">Buscando agendamentos anteriores...</td></tr>
         </tbody>
     </table>
 </div>
 
 <script>
+    // Configurações do seu Firebase
     const firebaseConfig = { 
         apiKey: "AIzaSyBkq2D8JFuxzPTI2z_Iirg3rYfSFfPJRXY",
         authDomain: "inspecao-saude-cbax.firebaseapp.com",
@@ -102,7 +108,47 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
+    // Função para carregar dados (Busca o que já foi agendado)
     async function carregarDados() {
         const corpo = document.getElementById("corpoTabela");
+        
         try {
-            const snap = await
+            const snap = await db.collection("agendamentos_dermato").orderBy("timestamp", "desc").get();
+            let html = "";
+            let cer = 0;
+
+            if (snap.empty) {
+                corpo.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:30px;">Nenhum agendamento encontrado no sistema.</td></tr>';
+                document.getElementById("total").innerText = "0";
+                return;
+            }
+
+            snap.forEach(doc => {
+                const d = doc.data();
+                if(d.unidadeDestino && d.unidadeDestino.includes("CER")) cer++;
+                
+                html += `<tr>
+                    <td><input type="checkbox" class="row-check" value="${doc.id}" onclick="toggleBotaoMassa()"></td>
+                    <td><b>${d.data || '-'}</b></td>
+                    <td>${d.unidadeDestino || '-'}</td>
+                    <td><span class="badge-origem">${d.unidadeOrigem || '-'}</span></td>
+                    <td>${d.posto || '-'}</td>
+                    <td>${d.nome || '-'}</td>
+                    <td><code>${d.rg || '-'}</code></td>
+                    <td>${d.telefone || '-'}</td>
+                    <td>${d.email || '-'}</td>
+                    <td style="text-align:center;">
+                        <button class="btn-lixeira" onclick="excluirUm('${doc.id}', '${d.nome}')" title="Excluir Militar">🗑️</button>
+                    </td>
+                </tr>`;
+            });
+
+            corpo.innerHTML = html;
+            document.getElementById("total").innerText = snap.size;
+            document.getElementById("totalCER").innerText = cer;
+            document.getElementById("totalOutros").innerText = snap.size - cer;
+            toggleBotaoMassa();
+
+        } catch (e) { 
+            console.error(e);
+            corpo.innerHTML
