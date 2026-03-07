@@ -9,24 +9,31 @@
     <style>
         :root { --cba-orange: #fb8c00; --cba-blue: #0a2c6d; }
         body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 0; padding: 10px; display: flex; justify-content: center; }
+        
         .premium-card { width: 100%; max-width: 480px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); border-top: 8px solid var(--cba-orange); }
+        
         header { text-align: center; margin-bottom: 25px; }
         header img { width: 80px; }
         header h2 { color: var(--cba-blue); margin: 10px 0 5px; font-size: 1.3rem; text-transform: uppercase; }
-        header p { font-weight: bold; font-size: 0.8rem; color: #666; margin: 0; }
-        .section-title { background: var(--cba-orange); color: white; padding: 8px 15px; font-size: 0.75rem; font-weight: bold; border-radius: 5px; margin-top: 25px; text-transform: uppercase; text-align: center; }
+        
+        .section-title { background: var(--cba-orange); color: white; padding: 8px 15px; font-size: 0.75rem; font-weight: bold; border-radius: 5px; margin-top: 20px; text-transform: uppercase; text-align: center; }
+        
         label { display: block; margin-top: 15px; font-weight: 700; color: #333; font-size: 0.7rem; text-transform: uppercase; }
         input, select { width: 100%; padding: 14px; margin-top: 5px; border: 2px solid #dfe4ea; border-radius: 10px; box-sizing: border-box; font-size: 16px; background-color: #fcfcfc; display: block; }
-        .btn-confirmar { background: var(--cba-orange); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 30px; font-size: 1.1rem; text-transform: uppercase; }
+        
+        .btn-confirmar { background: var(--cba-orange); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 30px; font-size: 1.1rem; text-transform: uppercase; width: 100%; }
+
+        /* ESTILOS DO SEU RECIBO (6ª SEÇÃO) */
         #sucesso { display: none; text-align: center; }
-        .caixa-recibo { border: 2px dashed var(--cba-orange); padding: 25px; border-radius: 15px; margin: 20px 0; background: #fffdfd; text-align: left; }
-        .status-ok { color: var(--cba-orange); font-weight: bold; text-align: center; display: block; margin-bottom: 15px; font-size: 1.1rem; }
-        .militar-nome { color: var(--cba-blue); font-weight: 900; font-size: 1.1rem; text-transform: uppercase; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
-        .info-linha { font-size: 0.9rem; margin: 8px 0; color: #333; }
-        .info-linha b { color: var(--cba-blue); }
-        .btn-imprimir { background: #555; color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
-        .link-voltar { display: block; margin-top: 15px; color: var(--cba-blue); font-size: 0.8rem; text-decoration: underline; cursor: pointer; }
-        @media print { .btn-imprimir, .link-voltar, .btn-confirmar { display: none; } .premium-card { border: none; box-shadow: none; } }
+        .caixa-confirmacao { border: 2px dashed var(--cba-orange); padding: 25px; border-radius: 15px; margin: 20px 0; background: #fffdfd; text-align: center; }
+        .check-icon { color: var(--cba-orange); font-weight: bold; margin-bottom: 10px; font-size: 1.1rem; }
+        .nome-militar { color: var(--cba-blue); font-weight: 900; font-size: 1.2rem; text-transform: uppercase; margin-bottom: 10px; }
+        .detalhes-recibo { font-size: 0.85rem; color: #444; line-height: 1.5; }
+        
+        .btn-pdf { background: #555; color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
+        .link-outro { display: block; margin-top: 15px; color: var(--cba-blue); font-size: 0.8rem; text-decoration: underline; cursor: pointer; }
+
+        @media print { .btn-pdf, .link-outro, .btn-confirmar { display: none; } .premium-card { border: none; box-shadow: none; } }
     </style>
 </head>
 <body>
@@ -35,18 +42,21 @@
     <div id="form-content">
         <header>
             <img src="https://raw.githubusercontent.com/gestaob6cbax/INSPECAO-MEDICA-CBA-X-2026/main/logo_cba_x.png">
-            <h2>Dermatologia 2026</h2>
-            <p>CBA X - SALVAMENTO MARÍTIMO</p>
+            <h2>Inspeção Dermatológica 2026</h2>
+            <p style="font-weight: bold; font-size: 0.7rem; color: #666;">CBA X - 6°Seção</p>
         </header>
 
-        <div class="section-title">Identificação Militar</div>
+        <div class="section-title">Dados do Militar</div>
         
         <label>Unidade de Origem (Onde serve)</label>
-        <select id="unidadeServe">
-            <option value="">Onde você está lotado?</option>
-            <option>CBA X</option><option>1º GMAR</option><option>2º GMAR</option><option>3º GMAR</option><option>4º GMAR</option>
-            <option>DBM 1/M (PAQUETÁ)</option><option>DBM 2/M (PISCINÃO)</option><option>DBM 3/M (RECREIO)</option>
-            <option>DBM 4/M (GUARATIBA)</option><option>DBM 5/M (SEPETIBA)</option><option>DBM 6/M (ITAIPU)</option>
+        <select id="unidadeServe" onchange="atualizarDatas()">
+            <option value="">Selecione sua unidade...</option>
+            <option value="CER">CBA X (CER BARRA)</option>
+            <option value="1GMAR">1º GMAR</option>
+            <option value="2GMAR">2º GMAR</option>
+            <option value="3GMAR">3º GMAR</option>
+            <option value="4GMAR">4º GMAR</option>
+            <option value="RECREIO">DBM 3/M (RECREIO)</option>
         </select>
 
         <label>Posto / Graduação</label>
@@ -58,14 +68,11 @@
 
         <input type="text" id="nome" placeholder="NOME COMPLETO" oninput="this.value = this.value.toUpperCase()">
         <input type="number" id="rg" placeholder="RG MILITAR">
-        <input type="tel" id="telefone" placeholder="TELEFONE (DDD + NÚMERO)">
-        <input type="email" id="email" placeholder="E-MAIL">
 
         <div class="section-title">Agendamento</div>
+        <label>Data da Inspeção</label>
         <select id="data">
-            <option value="">SELECIONE A DATA</option>
-            <option>07/04/2026</option><option>09/04/2026</option><option>14/04/2026</option>
-            <option>28/04/2026</option><option>05/05/2026</option>
+            <option value="">Selecione a Unidade primeiro...</option>
         </select>
 
         <button id="btnSalvar" class="btn-confirmar" onclick="salvar()">Confirmar Inscrição</button>
@@ -74,55 +81,70 @@
     <div id="sucesso">
         <header>
             <img src="https://raw.githubusercontent.com/gestaob6cbax/INSPECAO-MEDICA-CBA-X-2026/main/logo_cba_x.png">
-            <h2>Inspeção Periódica 2026</h2>
-            <p>CBA X - JUNTA DE SAÚDE</p>
+            <h2>Inspeção Dermatológica 2026</h2>
+            <p style="font-weight: bold; font-size: 0.7rem; color: #666;">CBA X - 6°Seção</p>
         </header>
-        <div class="caixa-recibo">
-            <span class="status-ok">✅ AGENDAMENTO CONFIRMADO</span>
-            <div class="militar-nome" id="res-nome"></div>
-            <div class="info-linha"><b>RG:</b> <span id="res-rg"></span></div>
-            <div class="info-linha"><b>Unidade:</b> <span id="res-unidade"></span></div>
-            <div class="info-linha"><b>Local:</b> POLICLÍNICA CBA X (Barra)</div>
-            <div class="info-linha"><b>Data:</b> <span id="res-data"></span></div>
-            <div class="info-linha"><b>Horário:</b> A partir das 08:00h</div>
+
+        <div class="caixa-confirmacao">
+            <div class="check-icon">✅ AGENDAMENTO CONFIRMADO</div>
+            <div class="nome-militar" id="res-nome"></div>
+            <div class="detalhes-recibo">
+                RG: <span id="res-rg"></span> | Local: CBA X | Data: <span id="res-data"></span> (livre demanda)
+            </div>
         </div>
-        <button class="btn-imprimir" onclick="window.print()">📥 Imprimir / Salvar PDF</button>
-        <span class="link-voltar" onclick="location.reload()">Realizar outro agendamento</span>
+
+        <button class="btn-pdf" onclick="window.print()">🖨️ IMPRIMIR / SALVAR PDF</button>
+        <span class="link-outro" onclick="location.reload()">Realizar outro agendamento</span>
     </div>
 </div>
 
 <script>
+    // Configurações Inteligentes solicitadas
+    const configDermato = {
+        "CER": { datas: ["07/04/2026", "14/04/2026", "28/04/2026"], limite: 87 },
+        "3GMAR": { datas: ["09/04/2026", "05/05/2026", "18/06/2026"], limite: 67 },
+        "4GMAR": { datas: ["12/05/2026", "07/07/2026"], limite: 77 },
+        "1GMAR": { datas: ["11/06/2026", "02/07/2026"], limite: 97 },
+        "RECREIO": { datas: ["22/06/2026", "06/07/2026", "20/07/2026"], limite: 87 }
+    };
+
     const firebaseConfig = { apiKey: "AIzaSyBkq2D8JFuxzPTI2z_Iirg3rYfSFfPJRXY", authDomain: "inspecao-saude-cbax.firebaseapp.com", projectId: "inspecao-saude-cbax", storageBucket: "inspecao-saude-cbax.firebasestorage.app", messagingSenderId: "1011281662526", appId: "1:1011281662526:web:1028e8a8d140684e98376f" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
+    function atualizarDatas() {
+        const unidade = document.getElementById("unidadeServe").value;
+        const comboData = document.getElementById("data");
+        comboData.innerHTML = '<option value="">Selecione o dia...</option>';
+        if(configDermato[unidade]) {
+            configDermato[unidade].datas.forEach(d => {
+                let opt = document.createElement("option");
+                opt.value = d; opt.text = d; comboData.add(opt);
+            });
+        }
+    }
+
     async function salvar() {
         const btn = document.getElementById("btnSalvar");
-        const d = {
-            unidadeOrigem: document.getElementById("unidadeServe").value,
+        const dados = {
+            nome: document.getElementById("nome").value.toUpperCase(),
+            rg: document.getElementById("rg").value,
             posto: document.getElementById("posto").value,
-            nome: document.getElementById("nome").value.trim().toUpperCase(),
-            rg: document.getElementById("rg").value.trim(),
-            telefone: document.getElementById("telefone").value.trim(),
-            email: document.getElementById("email").value.trim().toLowerCase(),
             data: document.getElementById("data").value,
+            unidade: document.getElementById("unidadeServe").value,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        if(!d.unidadeOrigem || !d.nome || !d.rg || !d.data || !d.posto) {
-            alert("Atenção: Preencha todos os campos!");
-            return;
-        }
+        if(!dados.nome || !dados.rg || !dados.data || !dados.posto) return alert("Preencha todos os campos!");
 
         btn.disabled = true;
         btn.innerText = "OK...";
 
         try {
-            await db.collection("agendamentos_dermato").add(d);
-            document.getElementById("res-nome").innerText = d.posto + " " + d.nome;
-            document.getElementById("res-rg").innerText = d.rg;
-            document.getElementById("res-unidade").innerText = d.unidadeOrigem;
-            document.getElementById("res-data").innerText = d.data;
+            await db.collection("agendamentos_dermato").add(dados);
+            document.getElementById("res-nome").innerText = dados.posto + " " + dados.nome;
+            document.getElementById("res-rg").innerText = dados.rg;
+            document.getElementById("res-data").innerText = dados.data;
             document.getElementById("form-content").style.display = "none";
             document.getElementById("sucesso").style.display = "block";
             window.scrollTo(0,0);
