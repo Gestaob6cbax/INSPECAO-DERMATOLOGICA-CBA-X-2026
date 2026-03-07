@@ -84,13 +84,13 @@
 </div>
 
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyDDWZDSNvsXyKDl0T54ROn_pOUSUGheQZw",
-        authDomain: "inspecao-dermatologia-cbax.firebaseapp.com",
-        projectId: "inspecao-dermatologia-cbax",
-        storageBucket: "inspecao-dermatologia-cbax.firebasestorage.app",
-        messagingSenderId: "513142138310",
-        appId: "1:513142138310:web:74cb653c48f574541dfec7"
+    const firebaseConfig = { 
+        apiKey: "AIzaSyBkq2D8JFuxzPTI2z_Iirg3rYfSFfPJRXY",
+        authDomain: "inspecao-saude-cbax.firebaseapp.com",
+        projectId: "inspecao-saude-cbax",
+        storageBucket: "inspecao-saude-cbax.firebasestorage.app",
+        messagingSenderId: "1011281662526",
+        appId: "1:1011281662526:web:1028e8a8d140684e98376f"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
@@ -128,7 +128,7 @@
         badge.className = "vagas-badge vagas-ok";
 
         try {
-            const snap = await db.collection("agendamentos").where("unidadeDestino", "==", grupo).where("data", "==", dataSel).get();
+            const snap = await db.collection("agendamentos_dermato").where("unidadeDestino", "==", grupo).where("data", "==", dataSel).get();
             const restam = configDermato[grupo].limite - snap.size;
             badge.innerText = `✅ ${restam} VAGAS DISPONÍVEIS`;
         } catch (e) {
@@ -136,7 +136,7 @@
         }
     }
 
-    async function salvar() {
+   async function salvar() {
         const btn = document.getElementById("btnSalvar");
         const d = {
             unidadeServe: document.getElementById("unidadeServe").options[document.getElementById("unidadeServe").selectedIndex].text,
@@ -147,11 +147,13 @@
             telefone: document.getElementById("telefone").value.trim(),
             email: document.getElementById("email").value.trim().toLowerCase(),
             data: document.getElementById("data").value,
+            tipo: "DERMATOLOGIA",
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        if(!d.nome || !d.rg || !d.data || !d.email) {
-            alert("Capitã, por favor preencha todos os campos, incluindo o e-mail!");
+        // Alerta neutro: serve para qualquer posto ou graduação
+        if(!d.nome || !d.rg || !d.data || !d.email || !d.posto) {
+            alert("Atenção: Todos os campos devem ser preenchidos para concluir o agendamento.");
             return;
         }
 
@@ -159,16 +161,18 @@
         btn.innerText = "CONFIRMANDO...";
 
         try {
-            await db.collection("agendamentos").add(d);
+            await db.collection("agendamentos_dermato").add(d);
             document.getElementById("dataConfirmada").innerText = d.data;
             document.getElementById("form-content").style.display = "none";
             document.getElementById("sucesso").style.display = "block";
         } catch (e) {
-            alert("Erro ao salvar agendamento.");
+            console.error("Erro técnico:", e);
+            alert("Erro ao salvar. Verifique sua conexão e tente novamente.");
             btn.disabled = false;
             btn.innerText = "Confirmar Inscrição";
         }
     }
+
 </script>
 </body>
 </html>
