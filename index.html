@@ -37,7 +37,7 @@
         
         <label>Unidade de Origem (Onde serve)</label>
         <select id="unidadeServe" onchange="atualizarDatas()">
-            <option value="">Onde você está lotado?</option>
+            <option value="">Selecione sua unidade...</option>
             <option value="CER">CBA X (SEDE)</option>
             <option value="CER">CER BARRA</option>
             <option value="CER">2º GMAR (BARRA)</option>
@@ -66,8 +66,9 @@
         <input type="email" id="email" placeholder="E-MAIL">
 
         <div class="section-title">Agendamento</div>
+        <label>Selecione a Data Disponível</label>
         <select id="data" onchange="verificarVagas()">
-            <option value="">Selecione a unidade acima primeiro...</option>
+            <option value="">Aguardando unidade...</option>
         </select>
 
         <div id="statusVagas" class="vagas-badge"></div>
@@ -106,14 +107,29 @@
     function atualizarDatas() {
         const grupo = document.getElementById("unidadeServe").value;
         const combo = document.getElementById("data");
-        combo.innerHTML = '<option value="">Selecione a data...</option>';
+        
+        // Limpa e prepara o campo de data
+        combo.innerHTML = '';
         document.getElementById("statusVagas").style.display = "none";
+
         if(grupo && configDermato[grupo]) {
+            // Se tem unidade, coloca as datas direto
+            let optPadrao = document.createElement("option");
+            optPadrao.value = "";
+            optPadrao.text = "Selecione o dia...";
+            combo.add(optPadrao);
+
             configDermato[grupo].datas.forEach(d => {
                 let opt = document.createElement("option");
                 opt.value = d; opt.text = d;
                 combo.add(opt);
             });
+        } else {
+            // Se não selecionou unidade, avisa
+            let optAviso = document.createElement("option");
+            optAviso.value = "";
+            optAviso.text = "Escolha a unidade acima primeiro";
+            combo.add(optAviso);
         }
     }
 
@@ -128,7 +144,10 @@
         badge.className = "vagas-badge vagas-ok";
 
         try {
-            const snap = await db.collection("agendamentos_dermato").where("unidadeDestino", "==", grupo).where("data", "==", dataSel).get();
+            const snap = await db.collection("agendamentos_dermato")
+                                .where("unidadeDestino", "==", grupo)
+                                .where("data", "==", dataSel)
+                                .get();
             const restam = configDermato[grupo].limite - snap.size;
             badge.innerText = `✅ ${restam} VAGAS DISPONÍVEIS`;
         } catch (e) {
@@ -138,9 +157,11 @@
 
    async function salvar() {
         const btn = document.getElementById("btnSalvar");
+        const selUnidade = document.getElementById("unidadeServe");
+        
         const d = {
-            unidadeServe: document.getElementById("unidadeServe").options[document.getElementById("unidadeServe").selectedIndex].text,
-            unidadeDestino: document.getElementById("unidadeServe").value,
+            unidadeServe: selUnidade.options[selUnidade.selectedIndex].text,
+            unidadeDestino: selUnidade.value,
             posto: document.getElementById("posto").value,
             nome: document.getElementById("nome").value.trim().toUpperCase(),
             rg: document.getElementById("rg").value.trim(),
@@ -165,13 +186,11 @@
             document.getElementById("form-content").style.display = "none";
             document.getElementById("sucesso").style.display = "block";
         } catch (e) {
-            console.error("Erro técnico:", e);
-            alert("Erro ao salvar. Verifique sua conexão e tente novamente.");
+            alert("Erro ao salvar. Verifique sua conexão.");
             btn.disabled = false;
             btn.innerText = "Confirmar Inscrição";
         }
     }
-
 </script>
 </body>
 </html>
