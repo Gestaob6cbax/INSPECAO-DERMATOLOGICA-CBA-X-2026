@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agendamento Dermatológico 2026 - CBA X</title>
-    
+    <title>Agendamento Dermatológico 2026</title>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    
     <style>
         :root { --cba-orange: #fb8c00; --cba-blue: #0a2c6d; }
         body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 0; padding: 10px; display: flex; justify-content: center; }
@@ -18,43 +16,34 @@
         .section-title { background: var(--cba-orange); color: white; padding: 8px 15px; font-size: 0.75rem; font-weight: bold; border-radius: 5px; margin-top: 25px; text-transform: uppercase; text-align: center; }
         label { display: block; margin-top: 15px; font-weight: 700; color: #333; font-size: 0.75rem; text-transform: uppercase; }
         input, select { width: 100%; padding: 14px; margin-top: 6px; border: 2px solid #dfe4ea; border-radius: 10px; box-sizing: border-box; font-size: 16px; background-color: #fcfcfc; }
-        
         .vagas-badge { margin-top: 10px; padding: 12px; border-radius: 10px; text-align: center; font-size: 0.9rem; font-weight: bold; display: none; border: 1px solid; }
         .vagas-ok { background: #fff3e0; color: #e65100; border-color: #ffe0b2; }
-        .vagas-esgotado { background: #ffebee; color: #b71c1c; border-color: #ffcdd2; }
-
-        .btn-confirmar { background: linear-gradient(135deg, var(--cba-orange) 0%, #ef6c00 100%); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 30px; font-size: 1.1rem; text-transform: uppercase; transition: 0.3s; }
-        .btn-confirmar:disabled { background: #ccc !important; cursor: not-allowed; opacity: 0.6; }
+        .btn-confirmar { background: linear-gradient(135deg, var(--cba-orange) 0%, #ef6c00 100%); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 30px; font-size: 1.1rem; text-transform: uppercase; }
+        
+        /* Tela de Sucesso Estilo Odonto/Médica */
+        #sucesso { display: none; text-align: center; padding: 40px 20px; }
+        .icon-check { font-size: 50px; color: #2e7d32; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
 <div class="premium-card">
-    <header>
-        <img src="https://raw.githubusercontent.com/gestaob6cbax/INSPECAO-MEDICA-CBA-X-2026/main/logo_cba_x.png" alt="CBA X">
-        <h2>Agendamento Dermatológico</h2>
-        <p style="font-weight: bold; font-size: 0.8rem; color: #666;">CBA X - PREVENÇÃO 2026</p>
-    </header>
-
     <div id="form-content">
-        <div class="section-title">Identificação do Militar</div>
+        <header>
+            <img src="https://raw.githubusercontent.com/gestaob6cbax/INSPECAO-MEDICA-CBA-X-2026/main/logo_cba_x.png" alt="CBA X">
+            <h2>Agendamento Dermatológico</h2>
+            <p style="font-weight: bold; font-size: 0.8rem; color: #666;">CBA X - PREVENÇÃO 2026</p>
+        </header>
 
-        <label>Unidade de Lotação (Onde você serve)</label>
-        <select id="unidadeServe" onchange="atualizarOpcoesDatas()">
-            <option value="">Selecione sua unidade...</option>
-            <option value="CER">CBA X (SEDE)</option>
-            <option value="CER">CER BARRA</option>
-            <option value="CER">2º GMAR (BARRA)</option>
-            <option value="CER">GBS (BOTAFOGO)</option>
+        <div class="section-title">Identificação do Militar</div>
+        <label>Unidade de Lotação</label>
+        <select id="unidadeServe" onchange="atualizarDatas()">
+            <option value="">Selecione...</option>
+            <option value="CER">CBA X / CER / BARRA / GBS</option>
             <option value="3GMAR">3º GMAR (COPACABANA)</option>
-            <option value="4GMAR">4º GMAR (ITAIPU)</option>
-            <option value="4GMAR">DBM 6/M (ITAIPU)</option>
-            <option value="1GMAR">1º GMAR (BOTAFOGO)</option>
-            <option value="1GMAR">DBM 1/M (PAQUETÁ)</option>
-            <option value="1GMAR">DBM 2/M (PISCINÃO DE RAMOS)</option>
-            <option value="RECREIO">DBM 3/M (RECREIO)</option>
-            <option value="RECREIO">DBM 4/M (GUARATIBA)</option>
-            <option value="RECREIO">DBM 5/M (SEPETIBA)</option>
+            <option value="4GMAR">4º GMAR / DBM 6/M (ITAIPU)</option>
+            <option value="1GMAR">1º GMAR / DBM 1/M / DBM 2/M</option>
+            <option value="RECREIO">DBM 3/M / 4/M / 5/M</option>
         </select>
         
         <label>Posto / Graduação</label>
@@ -67,18 +56,21 @@
         <input type="text" id="nome" placeholder="NOME COMPLETO" oninput="this.value = this.value.toUpperCase()">
         <input type="number" id="rg" placeholder="RG MILITAR">
         <input type="tel" id="telefone" placeholder="TELEFONE (DDD + NÚMERO)">
-        <input type="email" id="email" placeholder="E-MAIL">
 
         <div class="section-title">Data da Consulta</div>
-        
-        <label>Selecione o Dia Disponível</label>
         <select id="data" onchange="verificarVagas()">
-            <option value="">Selecione a unidade acima primeiro...</option>
+            <option value="">Selecione a unidade primeiro...</option>
         </select>
 
         <div id="statusVagas" class="vagas-badge"></div>
+        <button id="btnSalvar" class="btn-confirmar" onclick="salvar()">Confirmar Inscrição</button>
+    </div>
 
-        <button id="btnSalvar" class="btn-confirmar" onclick="salvar()">Confirmar Agendamento</button>
+    <div id="sucesso">
+        <div class="icon-check">✅</div>
+        <h2 style="color: var(--cba-blue);">AGENDAMENTO REALIZADO!</h2>
+        <p>Sua inscrição para a Inspeção Dermatológica foi confirmada com sucesso.</p>
+        <button class="btn-confirmar" onclick="location.reload()">Novo Agendamento</button>
     </div>
 </div>
 
@@ -94,7 +86,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const configuracaoDermato = {
+    const config = {
         "CER": { datas: ["07/04/2026", "14/04/2026", "28/04/2026"], limite: 87 },
         "3GMAR": { datas: ["09/04/2026", "05/05/2026", "18/06/2026"], limite: 67 },
         "4GMAR": { datas: ["12/05/2026", "07/07/2026"], limite: 77 },
@@ -102,17 +94,15 @@
         "RECREIO": { datas: ["22/06/2026", "06/07/2026", "20/07/2026"], limite: 87 }
     };
 
-    function atualizarOpcoesDatas() {
+    function atualizarDatas() {
         const grupo = document.getElementById("unidadeServe").value;
-        const comboData = document.getElementById("data");
-        comboData.innerHTML = '<option value="">Selecione a data...</option>';
-        document.getElementById("statusVagas").style.display = "none";
-        
-        if(grupo && configuracaoDermato[grupo]) {
-            configuracaoDermato[grupo].datas.forEach(d => {
+        const combo = document.getElementById("data");
+        combo.innerHTML = '<option value="">Selecione a data...</option>';
+        if(grupo) {
+            config[grupo].datas.forEach(d => {
                 let opt = document.createElement("option");
                 opt.value = d; opt.text = d;
-                comboData.add(opt);
+                combo.add(opt);
             });
         }
     }
@@ -120,86 +110,44 @@
     async function verificarVagas() {
         const grupo = document.getElementById("unidadeServe").value;
         const dataSel = document.getElementById("data").value;
-        const badge = document.getElementById("statusVagas");
-        const btn = document.getElementById("btnSalvar");
-        
         if (!grupo || !dataSel) return;
-        
+
+        const badge = document.getElementById("statusVagas");
         badge.style.display = "block";
+        badge.innerText = "CONTANDO VAGAS...";
+
+        const snap = await db.collection("agendamentos").where("unidadeDestino", "==", grupo).where("data", "==", dataSel).get();
+        const restam = config[grupo].limite - snap.size;
+
+        badge.innerText = `✅ ${restam} VAGAS DISPONÍVEIS`;
         badge.className = "vagas-badge vagas-ok";
-        badge.innerText = "🔍 CONSULTANDO VAGAS...";
-        
-        try {
-            const snap = await db.collection("agendamentos")
-                .where("unidadeDestino", "==", grupo)
-                .where("data", "==", dataSel)
-                .get();
-
-            const limite = configuracaoDermato[grupo].limite;
-            const restam = limite - snap.size;
-
-            if (restam <= 0) {
-                badge.innerText = "❌ DATA ESGOTADA PARA ESTA UNIDADE";
-                badge.className = "vagas-badge vagas-esgotado";
-                btn.disabled = true;
-            } else {
-                badge.innerText = `✅ ${restam} VAGAS DISPONÍVEIS`;
-                badge.className = "vagas-badge vagas-ok";
-                btn.disabled = false;
-            }
-        } catch (e) {
-            badge.innerText = "Erro ao consultar banco de dados.";
-        }
     }
 
     async function salvar() {
-        const select = document.getElementById("unidadeServe");
         const btn = document.getElementById("btnSalvar");
-        
         const d = {
-            unidadeServe: select.options[select.selectedIndex].text,
-            unidadeDestino: select.value,
+            unidadeServe: document.getElementById("unidadeServe").options[document.getElementById("unidadeServe").selectedIndex].text,
+            unidadeDestino: document.getElementById("unidadeServe").value,
             posto: document.getElementById("posto").value,
-            nome: document.getElementById("nome").value.trim().toUpperCase(),
+            nome: document.getElementById("nome").value.trim(),
             rg: document.getElementById("rg").value.trim(),
             telefone: document.getElementById("telefone").value.trim(),
-            email: document.getElementById("email").value.trim().toLowerCase(),
             data: document.getElementById("data").value,
-            tipo: "DERMATOLOGIA",
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        // Validação de campos vazios
-        if (!d.unidadeDestino || !d.posto || !d.nome || !d.rg || !d.data) {
-            return alert("Atenção: Todos os campos são obrigatórios!");
-        }
+        if(!d.nome || !d.rg || !d.data) return alert("Preencha todos os campos!");
 
-        if (confirm(`Deseja confirmar seu agendamento para o dia ${d.data}?`)) {
-            btn.disabled = true;
-            btn.innerText = "SALVANDO AGENDAMENTO...";
+        btn.disabled = true;
+        btn.innerText = "SALVANDO...";
 
-            try {
-                // Checagem de Duplicidade por RG
-                const check = await db.collection("agendamentos")
-                    .where("rg", "==", d.rg)
-                    .where("tipo", "==", "DERMATOLOGIA")
-                    .get();
-
-                if (!check.empty) {
-                    alert("Atenção! Este RG já possui um agendamento para Dermatologia.");
-                    btn.disabled = false;
-                    btn.innerText = "Confirmar Agendamento";
-                    return;
-                }
-
-                await db.collection("agendamentos").add(d);
-                alert("SUCESSO! Agendamento Dermatológico realizado. Compareça à unidade de atendimento na data escolhida a partir das 08:00h.");
-                location.reload();
-            } catch (e) { 
-                alert("Erro técnico ao salvar. Tente novamente ou procure a B6."); 
-                btn.disabled = false;
-                btn.innerText = "Confirmar Agendamento";
-            }
+        try {
+            await db.collection("agendamentos").add(d);
+            document.getElementById("form-content").style.display = "none";
+            document.getElementById("sucesso").style.display = "block";
+        } catch (e) {
+            alert("Erro ao salvar.");
+            btn.disabled = false;
         }
     }
 </script>
