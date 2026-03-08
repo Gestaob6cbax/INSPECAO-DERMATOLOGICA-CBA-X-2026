@@ -23,7 +23,13 @@
         .caixa-confirmacao { border: 3px dashed var(--cba-color); padding: 20px; border-radius: 15px; margin: 15px 0; background: #fffdfd; }
         .nome-militar { color: var(--cba-blue); font-weight: 900; font-size: 1.1rem; text-transform: uppercase; }
         .link-outro { display:block; margin-top:15px; cursor:pointer; font-size:0.8rem; color:var(--cba-blue); text-decoration:underline; }
-        @media print { .btn-confirmar, .link-outro, #form-content, .section-title { display: none !important; } .premium-card { border: none; box-shadow: none; } #sucesso { display: block !important; } }
+        
+        @media print { 
+            .btn-confirmar, .link-outro, #form-content, .section-title { display: none !important; } 
+            .premium-card { border: none; box-shadow: none; } 
+            #sucesso { display: block !important; } 
+            #sucesso img { display: block !important; margin: 0 auto !important; -webkit-print-color-adjust: exact; }
+        }
     </style>
 </head>
 <body>
@@ -96,8 +102,11 @@
     </div>
 
     <div id="sucesso">
-        <header><img src="https://raw.githubusercontent.com/gestaob6cbax/INSPECAO-MEDICA-CBA-X-2026/main/logo_cba_x.png">
-            <h2>Agendamento Confirmado</h2><p>CBA X - 6ª Seção</p></header>
+        <header>
+            <img src="https://raw.githubusercontent.com/gestaob6cbax/INSPECAO-MEDICA-CBA-X-2026/main/logo_cba_x.png" style="width: 75px; height: auto; display: block; margin: 0 auto 10px auto;">
+            <h2>Agendamento Confirmado</h2>
+            <p style="font-weight: bold; font-size: 0.7rem; color: #666;">CBA X - 6ª Seção</p>
+        </header>
         <div class="caixa-confirmacao">
             <div class="nome-militar" id="res-nome"></div>
             <div style="font-size: 0.9rem; margin-top: 10px; line-height: 1.8;">
@@ -193,7 +202,6 @@
         btn.disabled = true; btn.innerText = "VERIFICANDO...";
 
         try {
-            // TRAVA DE RG: VERIFICA SE JÁ EXISTE AGENDAMENTO DERMATO PARA ESTE RG
             const consultaRG = await db.collection("agendamentos_dermato").where("rg", "==", rg).get();
             
             if (!consultaRG.empty) {
