@@ -2,12 +2,12 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>ADM - Dermatologia 2026 - CBA X</title>
+    <title>ADM - Gestão Completa Dermatologia 2026</title>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        :root { --dermato-color: #fb8c00; --cba-blue: #0a2c6d; --cba-red: #d32f2f; --excel-green: #2e7d32; }
+        :root { --dermato-color: #fb8c00; --cba-blue: #0a2c6d; --cba-red: #d32f2f; --excel-green: #2e7d32; --polo-color: #0288d1; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
         
         .header-adm { 
@@ -16,87 +16,95 @@
             border-left: 8px solid var(--dermato-color); margin-bottom: 20px; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
         }
-        
-        .header-info { display: flex; align-items: center; gap: 15px; }
-        .header-info h2 { margin: 0; color: var(--cba-blue); font-size: 1.2rem; text-transform: uppercase; }
-        
-        .btn-group { display: flex; gap: 10px; }
-        .btn-relatorio { background: var(--excel-green); color: white; padding: 10px 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-reset { background: var(--cba-red); color: white; padding: 10px 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; opacity: 0.8; }
-        .btn-relatorio:hover, .btn-reset:hover { filter: brightness(1.1); }
 
-        .stats-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-        .stat-card { background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-bottom: 4px solid #ddd; }
-        .stat-card h3 { font-size: 0.75rem; color: #888; text-transform: uppercase; margin: 0; letter-spacing: 1px; }
-        .stat-card p { font-size: 2.2rem; font-weight: bold; color: var(--cba-blue); margin: 10px 0 0; }
+        /* CARD DESTAQUE: TOTAL GERAL */
+        .card-destaque-geral {
+            background: var(--cba-blue); color: white; padding: 20px; border-radius: 15px;
+            text-align: center; box-shadow: 0 4px 15px rgba(10, 44, 109, 0.2); margin-bottom: 25px;
+        }
+        .card-destaque-geral h3 { margin: 0; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        .card-destaque-geral p { margin: 5px 0 0; font-size: 3rem; font-weight: 900; }
 
-        .search-box { background: white; padding: 15px; border-radius: 10px; display: flex; gap: 10px; margin-bottom: 15px; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        input#busca { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
-        input#busca:focus { border-color: var(--dermato-color); }
-        .btn-atualizar { background: var(--cba-blue); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-atualizar:disabled { background: #ccc; cursor: not-allowed; }
+        .section-title { 
+            font-size: 0.85rem; font-weight: bold; color: #555; 
+            text-transform: uppercase; margin: 20px 0 10px 5px; 
+            display: flex; align-items: center; gap: 10px;
+        }
+        .section-title::after { content: ""; flex: 1; height: 1px; background: #ddd; }
+
+        /* GRIDS */
+        .grid-cards { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+            gap: 15px; margin-bottom: 20px; 
+        }
+        
+        /* Estilo Unidades de Origem */
+        .card-unidade { 
+            background: white; padding: 15px; border-radius: 12px; text-align: center; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-bottom: 4px solid var(--dermato-color); 
+        }
+        .card-unidade h4 { font-size: 0.65rem; color: #888; text-transform: uppercase; margin: 0; min-height: 30px; }
+        .card-unidade p { font-size: 1.8rem; font-weight: bold; color: var(--cba-blue); margin: 5px 0 0; }
+
+        /* Estilo Polos de Atendimento */
+        .card-polo { 
+            background: white; padding: 15px; border-radius: 12px; text-align: center; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-bottom: 4px solid var(--polo-color); 
+        }
+        .card-polo h4 { font-size: 0.65rem; color: #888; text-transform: uppercase; margin: 0; min-height: 30px; }
+        .card-polo p { font-size: 1.8rem; font-weight: bold; color: var(--polo-color); margin: 5px 0 0; }
+
+        /* BUSCA E TABELA */
+        .search-box { background: white; padding: 15px; border-radius: 10px; display: flex; gap: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        input#busca { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
+        
+        .btn-excel { background: var(--excel-green); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
         .table-container { background: white; border-radius: 10px; overflow-x: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
-        th { background: #f8f9fa; padding: 15px; font-size: 11px; color: #777; text-align: left; border-bottom: 2px solid #eee; text-transform: uppercase; }
-        td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 13px; color: #333; }
-        tr:hover { background: #fffcf9; }
-        
-        .btn-del { background: #fff5f5; border: 1px solid #ffcdd2; cursor: pointer; color: var(--cba-red); padding: 6px 10px; border-radius: 5px; transition: 0.2s; }
-        .btn-del:hover { background: var(--cba-red); color: white; }
-
-        code { background: #eee; padding: 2px 5px; border-radius: 4px; font-family: monospace; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th { background: #f8f9fa; padding: 15px; font-size: 11px; color: #777; text-align: left; border-bottom: 2px solid #eee; }
+        td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 13px; }
+        .btn-del { background: #fff5f5; border: 1px solid #ffcdd2; color: var(--cba-red); padding: 5px 8px; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="header-adm">
-    <div class="header-info">
-        <img src="https://raw.githubusercontent.com/gestaob6cbax/INSPECAO-MEDICA-CBA-X-2026/main/logo_cba_x.png" width="55">
-        <div>
-            <h2>Painel Gestão Dermatológica 2026</h2>
-            <p style="margin:0; font-size: 0.7rem; color: #888; font-weight: bold;">CBA X - 6ª SEÇÃO (ADM)</p>
-        </div>
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <img src="https://raw.githubusercontent.com/gestaob6cbax/INSPECAO-MEDICA-CBA-X-2026/main/logo_cba_x.png" width="50">
+        <h2>Painel ADM Dermatologia 2026</h2>
     </div>
-    <div class="btn-group">
-        <button class="btn-relatorio" onclick="baixarRelatorio()">📥 Gerar Planilha Excel</button>
-        <button class="btn-reset" onclick="resetarSistema()">⚠️ Limpar Banco</button>
-    </div>
+    <button class="btn-excel" onclick="baixarRelatorio()">📥 EXPORTAR EXCEL</button>
 </div>
 
-<div class="stats-container">
-    <div class="stat-card"><h3>Total de Inscritos</h3><p id="total">0</p></div>
-    <div class="stat-card" style="border-bottom-color: var(--dermato-color);"><h3>Polo Recreio</h3><p id="totalRecreio">0</p></div>
-    <div class="stat-card" style="border-bottom-color: var(--cba-blue);"><h3>Outros Polos</h3><p id="totalOutros">0</p></div>
+<div class="card-destaque-geral">
+    <h3>Total de Militares Agendados</h3>
+    <p id="totalGeral">0</p>
 </div>
+
+<div class="section-title">Efetivo por Unidade de Origem</div>
+<div id="gridUnidades" class="grid-cards"></div>
+
+<div class="section-title">Efetivo por Polo de Atendimento</div>
+<div id="gridPolos" class="grid-cards"></div>
 
 <div class="search-box">
-    <input type="text" id="busca" placeholder="🔍 Pesquisar por Nome, RG Militar ou Unidade de Origem..." oninput="filtrar()">
-    <button class="btn-atualizar" onclick="carregarDados()">🔄 Atualizar Lista</button>
+    <input type="text" id="busca" placeholder="🔍 Filtrar lista de militares..." oninput="filtrar()">
+    <button onclick="carregarDados()" style="border:none; background:none; cursor:pointer;">🔄</button>
 </div>
 
 <div class="table-container">
-    <table id="tabelaADM">
+    <table>
         <thead>
             <tr>
-                <th>DATA</th>
-                <th>UNIDADE</th>
-                <th>POLO ATENDIMENTO</th>
-                <th>POSTO</th>
-                <th>NOME COMPLETO</th>
-                <th>RG MILITAR</th>
-                <th>CONTATO</th>
-                <th style="text-align:center;">AÇÃO</th>
+                <th>DATA</th><th>UNIDADE ORIGEM</th><th>POSTO</th><th>NOME</th><th>RG</th><th>POLO</th><th>AÇÕES</th>
             </tr>
         </thead>
-        <tbody id="corpoTabela">
-            <tr><td colspan="8" style="text-align:center; padding:30px;">Iniciando sistema...</td></tr>
-        </tbody>
+        <tbody id="corpoTabela"></tbody>
     </table>
 </div>
 
 <script>
-    // Configuração do Firebase
     const firebaseConfig = { 
         apiKey: "AIzaSyBkq2D8JFuxzPTI2z_Iirg3rYfSFfPJRXY", 
         authDomain: "inspecao-saude-cbax.firebaseapp.com", 
@@ -106,135 +114,81 @@
         appId: "1:1011281662526:web:1028e8a8d140684e98376f" 
     };
 
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-
     let todosOsDados = [];
 
-    // FUNÇÃO PARA CARREGAR E ATUALIZAR DADOS
     async function carregarDados() {
-        const corpoTabela = document.getElementById("corpoTabela");
-        const btnAtu = document.querySelector(".btn-atualizar");
-        
-        // Limpa a tabela e mostra carregamento
-        corpoTabela.innerHTML = "<tr><td colspan='8' style='text-align:center; padding:30px; color: var(--dermato-color); font-weight: bold;'>🔄 Sincronizando com o Banco de Dados...</td></tr>";
-        btnAtu.innerText = "⏳ Carregando...";
-        btnAtu.disabled = true;
-
-        try {
-            // Busca dados reais do Firebase
-            const snap = await db.collection("agendamentos_dermato").get();
-            todosOsDados = [];
-            
-            snap.forEach(doc => {
-                todosOsDados.push({ id: doc.id, ...doc.data() });
-            });
-            
-            // Ordenação por timestamp (mais recentes primeiro)
-            todosOsDados.sort((a, b) => {
-                const timeA = a.timestamp ? a.timestamp.seconds : 0;
-                const timeB = b.timestamp ? b.timestamp.seconds : 0;
-                return timeB - timeA;
-            });
-            
-            renderizar(todosOsDados);
-            
-        } catch (e) {
-            console.error("Erro na atualização:", e);
-            corpoTabela.innerHTML = "<tr><td colspan='8' style='color:red; text-align:center;'>❌ Erro ao conectar com o Firebase.</td></tr>";
-        } finally {
-            // Restaura o botão após um pequeno delay
-            setTimeout(() => {
-                btnAtu.innerText = "🔄 Atualizar Lista";
-                btnAtu.disabled = false;
-            }, 600);
-        }
+        const snap = await db.collection("agendamentos_dermato").orderBy("timestamp", "desc").get();
+        todosOsDados = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderizar(todosOsDados);
     }
 
-    // FUNÇÃO PARA RENDERIZAR AS LINHAS NA TABELA
     function renderizar(lista) {
         let html = "";
-        let countRecreio = 0;
+        let unidadesMap = {};
+        let polosMap = {};
 
-        if (lista.length === 0) {
-            html = "<tr><td colspan='8' style='text-align:center; padding:30px;'>Nenhum registro encontrado no sistema.</td></tr>";
-        } else {
-            lista.forEach(d => {
-                // Lógica de contagem de vagas Recreio vs Outros
-                const localComparar = (d.localTexto || d.local || "").toUpperCase();
-                if(localComparar.includes("RECREIO")) countRecreio++;
-                
-                html += `<tr>
-                    <td><strong>${d.data}</strong></td>
-                    <td><small>${d.unidadeOrigem || '-'}</small></td>
-                    <td><span style="color:var(--dermato-color); font-weight:bold;">${d.localTexto || d.local}</span></td>
-                    <td>${d.posto}</td>
-                    <td><strong>${d.nome}</strong></td>
-                    <td><code>${d.rg}</code></td>
-                    <td><small>${d.telefone || '-'}</small></td>
-                    <td style="text-align:center;"><button class="btn-del" onclick="excluir('${d.id}')" title="Excluir">🗑️</button></td>
-                </tr>`;
-            });
-        }
+        lista.forEach(d => {
+            // Contagem Unidades
+            let un = d.unidadeOrigem || "N/I";
+            unidadesMap[un] = (unidadesMap[un] || 0) + 1;
+
+            // Contagem Polos
+            let polo = d.localTexto || "N/I";
+            polosMap[polo] = (polosMap[polo] || 0) + 1;
+
+            html += `<tr>
+                <td>${d.data}</td>
+                <td><strong>${d.unidadeOrigem}</strong></td>
+                <td>${d.posto}</td>
+                <td>${d.nome}</td>
+                <td><code>${d.rg}</code></td>
+                <td><small>${d.localTexto}</small></td>
+                <td><button class="btn-del" onclick="excluir('${d.id}')">🗑️</button></td>
+            </tr>`;
+        });
 
         document.getElementById("corpoTabela").innerHTML = html;
-        document.getElementById("total").innerText = lista.length;
-        document.getElementById("totalRecreio").innerText = countRecreio;
-        document.getElementById("totalOutros").innerText = lista.length - countRecreio;
+        document.getElementById("totalGeral").innerText = lista.length;
+
+        // Renderizar Cards Unidades (Laranja)
+        let uniHtml = "";
+        Object.keys(unidadesMap).sort().forEach(un => {
+            uniHtml += `<div class="card-unidade"><h4>${un}</h4><p>${unidadesMap[un]}</p></div>`;
+        });
+        document.getElementById("gridUnidades").innerHTML = uniHtml;
+
+        // Renderizar Cards Polos (Azul)
+        let polosHtml = "";
+        Object.keys(polosMap).sort().forEach(p => {
+            polosHtml += `<div class="card-polo"><h4>${p}</h4><p>${polosMap[p]}</p></div>`;
+        });
+        document.getElementById("gridPolos").innerHTML = polosHtml;
     }
 
-    // FUNÇÃO DE FILTRO (BUSCA)
     function filtrar() {
         const termo = document.getElementById("busca").value.toUpperCase();
         const filtrados = todosOsDados.filter(d => 
-            (d.nome && d.nome.toUpperCase().includes(termo)) || 
-            (d.rg && d.rg.includes(termo)) || 
-            (d.unidadeOrigem && d.unidadeOrigem.toUpperCase().includes(termo))
+            d.nome.toUpperCase().includes(termo) || d.rg.includes(termo) || d.unidadeOrigem.toUpperCase().includes(termo)
         );
         renderizar(filtrados);
     }
 
-    // FUNÇÃO PARA EXCLUIR REGISTRO ÚNICO
     async function excluir(id) {
-        if(confirm("Deseja realmente remover este agendamento? Esta ação não pode ser desfeita.")) {
+        if(confirm("Excluir registro?")) {
             await db.collection("agendamentos_dermato").doc(id).delete();
             carregarDados();
         }
     }
 
-    // FUNÇÃO PARA RESETAR TODO O BANCO
-    async function resetarSistema() {
-        if(confirm("🚨 ALERTA CRÍTICO: Isso apagará TODOS os registros de dermatologia permanentemente. Confirma?")) {
-            const snap = await db.collection("agendamentos_dermato").get();
-            const batch = db.batch();
-            snap.forEach(doc => batch.delete(doc.ref));
-            await batch.commit();
-            alert("Banco de dados reiniciado com sucesso!");
-            carregarDados();
-        }
-    }
-
-    // FUNÇÃO PARA GERAR EXCEL
     function baixarRelatorio() {
-        if(todosOsDados.length === 0) return alert("Não há dados para exportar.");
-        
-        const ws = XLSX.utils.json_to_sheet(todosOsDados.map(d => ({
-            DATA_AGENDADA: d.data,
-            POSTO_GRAD: d.posto,
-            NOME_COMPLETO: d.nome,
-            RG_MILITAR: d.rg,
-            UNIDADE_ORIGEM: d.unidadeOrigem,
-            POLO_ATENDIMENTO: d.localTexto || d.local,
-            TELEFONE: d.telefone,
-            EMAIL: d.email
-        })));
-        
+        const ws = XLSX.utils.json_to_sheet(todosOsDados);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Dermato_CBAX");
-        XLSX.writeFile(wb, "RELATORIO_DERMATO_CBAX_2026.xlsx");
+        XLSX.utils.book_append_sheet(wb, ws, "Dermatologia");
+        XLSX.writeFile(wb, "RELATORIO_COMPLETO_DERMATO.xlsx");
     }
 
-    // INICIALIZAÇÃO
     window.onload = carregarDados;
 </script>
 </body>
