@@ -21,25 +21,31 @@
         .header-info h2 { margin: 0; color: var(--cba-blue); font-size: 1.2rem; text-transform: uppercase; }
         
         .btn-group { display: flex; gap: 10px; }
-        .btn-relatorio { background: var(--excel-green); color: white; padding: 10px 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
-        .btn-reset { background: var(--cba-red); color: white; padding: 10px 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-relatorio { background: var(--excel-green); color: white; padding: 10px 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-reset { background: var(--cba-red); color: white; padding: 10px 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; opacity: 0.8; }
+        .btn-relatorio:hover, .btn-reset:hover { filter: brightness(1.1); }
 
         .stats-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-        .stat-card { background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-bottom: 3px solid #ddd; }
-        .stat-card h3 { font-size: 0.7rem; color: #888; text-transform: uppercase; margin: 0; }
+        .stat-card { background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-bottom: 4px solid #ddd; }
+        .stat-card h3 { font-size: 0.75rem; color: #888; text-transform: uppercase; margin: 0; letter-spacing: 1px; }
         .stat-card p { font-size: 2.2rem; font-weight: bold; color: var(--cba-blue); margin: 10px 0 0; }
 
-        .search-box { background: white; padding: 15px; border-radius: 10px; display: flex; gap: 10px; margin-bottom: 15px; align-items: center; }
-        input#busca { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
-        .btn-atualizar { background: var(--cba-blue); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .search-box { background: white; padding: 15px; border-radius: 10px; display: flex; gap: 10px; margin-bottom: 15px; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        input#busca { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
+        input#busca:focus { border-color: var(--dermato-color); }
+        .btn-atualizar { background: var(--cba-blue); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-atualizar:disabled { background: #ccc; cursor: not-allowed; }
 
         .table-container { background: white; border-radius: 10px; overflow-x: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         table { width: 100%; border-collapse: collapse; min-width: 1000px; }
-        th { background: #f8f9fa; padding: 12px; font-size: 11px; color: #777; text-align: left; border-bottom: 2px solid #eee; text-transform: uppercase; }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; color: #333; }
-        tr:hover { background: #f9f9f9; }
+        th { background: #f8f9fa; padding: 15px; font-size: 11px; color: #777; text-align: left; border-bottom: 2px solid #eee; text-transform: uppercase; }
+        td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 13px; color: #333; }
+        tr:hover { background: #fffcf9; }
         
-        .btn-del { background: #fff5f5; border: 1px solid #ffcdd2; cursor: pointer; color: var(--cba-red); padding: 5px 8px; border-radius: 5px; }
+        .btn-del { background: #fff5f5; border: 1px solid #ffcdd2; cursor: pointer; color: var(--cba-red); padding: 6px 10px; border-radius: 5px; transition: 0.2s; }
+        .btn-del:hover { background: var(--cba-red); color: white; }
+
+        code { background: #eee; padding: 2px 5px; border-radius: 4px; font-family: monospace; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -49,7 +55,7 @@
         <img src="https://raw.githubusercontent.com/gestaob6cbax/INSPECAO-MEDICA-CBA-X-2026/main/logo_cba_x.png" width="55">
         <div>
             <h2>Painel Gestão Dermatológica 2026</h2>
-            <p style="margin:0; font-size: 0.7rem; color: #888; font-weight: bold;">CBA X - 6ª SEÇÃO</p>
+            <p style="margin:0; font-size: 0.7rem; color: #888; font-weight: bold;">CBA X - 6ª SEÇÃO (ADM)</p>
         </div>
     </div>
     <div class="btn-group">
@@ -65,7 +71,7 @@
 </div>
 
 <div class="search-box">
-    <input type="text" id="busca" placeholder="🔍 Pesquisar por Nome, RG ou Unidade..." oninput="filtrar()">
+    <input type="text" id="busca" placeholder="🔍 Pesquisar por Nome, RG Militar ou Unidade de Origem..." oninput="filtrar()">
     <button class="btn-atualizar" onclick="carregarDados()">🔄 Atualizar Lista</button>
 </div>
 
@@ -84,12 +90,13 @@
             </tr>
         </thead>
         <tbody id="corpoTabela">
-            <tr><td colspan="8" style="text-align:center; padding:30px;">Buscando agendamentos...</td></tr>
+            <tr><td colspan="8" style="text-align:center; padding:30px;">Iniciando sistema...</td></tr>
         </tbody>
     </table>
 </div>
 
 <script>
+    // Configuração do Firebase
     const firebaseConfig = { 
         apiKey: "AIzaSyBkq2D8JFuxzPTI2z_Iirg3rYfSFfPJRXY", 
         authDomain: "inspecao-saude-cbax.firebaseapp.com", 
@@ -98,78 +105,116 @@
         messagingSenderId: "1011281662526", 
         appId: "1:1011281662526:web:1028e8a8d140684e98376f" 
     };
+
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
     let todosOsDados = [];
 
+    // FUNÇÃO PARA CARREGAR E ATUALIZAR DADOS
     async function carregarDados() {
+        const corpoTabela = document.getElementById("corpoTabela");
+        const btnAtu = document.querySelector(".btn-atualizar");
+        
+        // Limpa a tabela e mostra carregamento
+        corpoTabela.innerHTML = "<tr><td colspan='8' style='text-align:center; padding:30px; color: var(--dermato-color); font-weight: bold;'>🔄 Sincronizando com o Banco de Dados...</td></tr>";
+        btnAtu.innerText = "⏳ Carregando...";
+        btnAtu.disabled = true;
+
         try {
+            // Busca dados reais do Firebase
             const snap = await db.collection("agendamentos_dermato").get();
             todosOsDados = [];
-            snap.forEach(doc => todosOsDados.push({ id: doc.id, ...doc.data() }));
             
-            // Ordenação automática por data
-            todosOsDados.sort((a,b) => a.data.split('/').reverse().join('').localeCompare(b.data.split('/').reverse().join('')));
+            snap.forEach(doc => {
+                todosOsDados.push({ id: doc.id, ...doc.data() });
+            });
+            
+            // Ordenação por timestamp (mais recentes primeiro)
+            todosOsDados.sort((a, b) => {
+                const timeA = a.timestamp ? a.timestamp.seconds : 0;
+                const timeB = b.timestamp ? b.timestamp.seconds : 0;
+                return timeB - timeA;
+            });
             
             renderizar(todosOsDados);
+            
         } catch (e) {
-            document.getElementById("corpoTabela").innerHTML = "<tr><td colspan='8' style='color:red; text-align:center;'>Erro ao conectar com o banco.</td></tr>";
+            console.error("Erro na atualização:", e);
+            corpoTabela.innerHTML = "<tr><td colspan='8' style='color:red; text-align:center;'>❌ Erro ao conectar com o Firebase.</td></tr>";
+        } finally {
+            // Restaura o botão após um pequeno delay
+            setTimeout(() => {
+                btnAtu.innerText = "🔄 Atualizar Lista";
+                btnAtu.disabled = false;
+            }, 600);
         }
     }
 
+    // FUNÇÃO PARA RENDERIZAR AS LINHAS NA TABELA
     function renderizar(lista) {
         let html = "";
         let countRecreio = 0;
 
-        lista.forEach(d => {
-            if(d.local === "RECREIO") countRecreio++;
-            
-            html += `<tr>
-                <td><strong>${d.data}</strong></td>
-                <td><small>${d.unidadeOrigem || '-'}</small></td>
-                <td><span style="color:var(--dermato-color); font-weight:bold;">${d.localTexto || d.local}</span></td>
-                <td>${d.posto}</td>
-                <td><strong>${d.nome}</strong></td>
-                <td><code>${d.rg}</code></td>
-                <td><small>${d.telefone || '-'}</small></td>
-                <td style="text-align:center;"><button class="btn-del" onclick="excluir('${d.id}')">🗑️</button></td>
-            </tr>`;
-        });
+        if (lista.length === 0) {
+            html = "<tr><td colspan='8' style='text-align:center; padding:30px;'>Nenhum registro encontrado no sistema.</td></tr>";
+        } else {
+            lista.forEach(d => {
+                // Lógica de contagem de vagas Recreio vs Outros
+                const localComparar = (d.localTexto || d.local || "").toUpperCase();
+                if(localComparar.includes("RECREIO")) countRecreio++;
+                
+                html += `<tr>
+                    <td><strong>${d.data}</strong></td>
+                    <td><small>${d.unidadeOrigem || '-'}</small></td>
+                    <td><span style="color:var(--dermato-color); font-weight:bold;">${d.localTexto || d.local}</span></td>
+                    <td>${d.posto}</td>
+                    <td><strong>${d.nome}</strong></td>
+                    <td><code>${d.rg}</code></td>
+                    <td><small>${d.telefone || '-'}</small></td>
+                    <td style="text-align:center;"><button class="btn-del" onclick="excluir('${d.id}')" title="Excluir">🗑️</button></td>
+                </tr>`;
+            });
+        }
 
-        document.getElementById("corpoTabela").innerHTML = html || "<tr><td colspan='8' style='text-align:center;'>Nenhum agendamento realizado até o momento.</td></tr>";
+        document.getElementById("corpoTabela").innerHTML = html;
         document.getElementById("total").innerText = lista.length;
         document.getElementById("totalRecreio").innerText = countRecreio;
         document.getElementById("totalOutros").innerText = lista.length - countRecreio;
     }
 
+    // FUNÇÃO DE FILTRO (BUSCA)
     function filtrar() {
         const termo = document.getElementById("busca").value.toUpperCase();
         const filtrados = todosOsDados.filter(d => 
-            d.nome.toUpperCase().includes(termo) || 
-            d.rg.includes(termo) || 
+            (d.nome && d.nome.toUpperCase().includes(termo)) || 
+            (d.rg && d.rg.includes(termo)) || 
             (d.unidadeOrigem && d.unidadeOrigem.toUpperCase().includes(termo))
         );
         renderizar(filtrados);
     }
 
+    // FUNÇÃO PARA EXCLUIR REGISTRO ÚNICO
     async function excluir(id) {
-        if(confirm("Deseja realmente remover este agendamento?")) {
+        if(confirm("Deseja realmente remover este agendamento? Esta ação não pode ser desfeita.")) {
             await db.collection("agendamentos_dermato").doc(id).delete();
             carregarDados();
         }
     }
 
+    // FUNÇÃO PARA RESETAR TODO O BANCO
     async function resetarSistema() {
-        if(confirm("🚨 AVISO: Isso apagará TODOS os dados de dermatologia. Confirma?")) {
+        if(confirm("🚨 ALERTA CRÍTICO: Isso apagará TODOS os registros de dermatologia permanentemente. Confirma?")) {
             const snap = await db.collection("agendamentos_dermato").get();
             const batch = db.batch();
             snap.forEach(doc => batch.delete(doc.ref));
             await batch.commit();
+            alert("Banco de dados reiniciado com sucesso!");
             carregarDados();
         }
     }
 
+    // FUNÇÃO PARA GERAR EXCEL
     function baixarRelatorio() {
         if(todosOsDados.length === 0) return alert("Não há dados para exportar.");
         
@@ -177,17 +222,19 @@
             DATA_AGENDADA: d.data,
             POSTO_GRAD: d.posto,
             NOME_COMPLETO: d.nome,
-            RG: d.rg,
-            UNIDADE: d.unidadeOrigem,
-            POLO: d.localTexto,
+            RG_MILITAR: d.rg,
+            UNIDADE_ORIGEM: d.unidadeOrigem,
+            POLO_ATENDIMENTO: d.localTexto || d.local,
             TELEFONE: d.telefone,
             EMAIL: d.email
         })));
+        
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Agendamentos_Dermato");
+        XLSX.utils.book_append_sheet(wb, ws, "Dermato_CBAX");
         XLSX.writeFile(wb, "RELATORIO_DERMATO_CBAX_2026.xlsx");
     }
 
+    // INICIALIZAÇÃO
     window.onload = carregarDados;
 </script>
 </body>
