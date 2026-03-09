@@ -6,6 +6,7 @@
     <title>Dermatologia 2026 - CBA X</title>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    
     <style>
         :root { --cba-color: #fb8c00; --cba-blue: #0a2c6d; }
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 10px; display: flex; justify-content: center; }
@@ -46,17 +47,12 @@
         <label>Unidade de Origem (Onde serve)</label>
         <select id="unidadeOrigem">
             <option value="">Selecione sua Unidade...</option>
-            <option>CBA X</option>
-            <option>CER</option> <option>1º GMAR BOTAFOGO</option>
-            <option>2º GMAR BARRA DA TIJUCA</option>
-            <option>3º GMAR COPACABANA</option>
-            <option>4º GMAR ITAIPU</option>
-            <option>GBS BOTAFOGO</option>
-            <option>DBM 1/M PAQUETÁ</option>
-            <option>DBM 2/M PISCINÃO</option>
-            <option>DBM 3/M RECREIO</option>
-            <option>DBM 4/M GUARATIBA</option>
-            <option>DBM 5/M SEPETIBA</option>
+            <option>CBA X</option><option>CER</option> 
+            <option>1º GMAR BOTAFOGO</option><option>2º GMAR BARRA DA TIJUCA</option>
+            <option>3º GMAR COPACABANA</option><option>4º GMAR ITAIPU</option>
+            <option>GBS BOTAFOGO</option><option>DBM 1/M PAQUETÁ</option>
+            <option>DBM 2/M PISCINÃO</option><option>DBM 3/M RECREIO</option>
+            <option>DBM 4/M GUARATIBA</option><option>DBM 5/M SEPETIBA</option>
             <option>DBM 6/M ITAIPU</option>
         </select>
 
@@ -81,7 +77,7 @@
         <input type="email" id="email" placeholder="militar@exemplo.com">
 
         <div class="section-title">Bloco 2: Local da Inspeção</div>
-        <label>Polo de Atendimento</label>
+        <label>Polo de Atendimento (Local da Inspeção)</label>
         <select id="localInspecao" onchange="carregarDatas()">
             <option value="">Selecione o Polo...</option>
             <option value="CER">CER BARRA DA TIJUCA</option>
@@ -98,7 +94,7 @@
         </select>
         <div id="msgVagas" class="vagas-info"></div>
 
-        <button id="btnSalvar" class="btn-confirmar" onclick="salvar()">Confirmar Inscrição</button>
+        <button id="btnSalvar" class="btn-confirmar" onclick="salvar()" disabled>Confirmar Inscrição</button>
     </div>
 
     <div id="sucesso">
@@ -109,11 +105,11 @@
         </header>
         <div class="caixa-confirmacao">
             <div class="nome-militar" id="res-nome"></div>
-            <div style="font-size: 0.85rem; margin-top: 10px; line-height: 1.6;">
-                RG: <span id="res-rg" style="font-weight:bold;"></span><br>
-                Polo: <span id="res-local" style="font-weight:bold;"></span><br>
-                Data: <span id="res-data" style="font-weight:bold;"></span><br>
-                <small>(Modalidade: Livre Demanda no dia escolhido)</small>
+            <div style="font-size: 0.85rem; margin-top: 10px; line-height: 1.6; text-align: left;">
+                🚩 RG: <span id="res-rg" style="font-weight:bold;"></span><br>
+                🚩 Local da Inspeção: <span id="res-local" style="font-weight:bold;"></span><br>
+                🚩 Data: <span id="res-data" style="font-weight:bold;"></span><br><br>
+                <center><small><b>(Modalidade: Livre Demanda no dia escolhido)</b></center></small>
             </div>
         </div>
         <button class="btn-confirmar" style="background:#555" onclick="window.print()">🖨️ IMPRIMIR / SALVAR PDF</button>
@@ -122,6 +118,7 @@
 </div>
 
 <script>
+    // Configurações de Datas e Limites (Mesmo padrão do Odonto)
     const configLocal = {
         "CER": { datas: ["07/04/2026", "14/04/2026", "28/04/2026"], limite: 87 },
         "BOTAFOGO": { datas: ["11/06/2026", "02/07/2026"], limite: 97 },
@@ -130,6 +127,7 @@
         "RECREIO": { datas: ["22/06/2026", "06/07/2026", "20/07/2026"], limite: 87 }
     };
 
+    // Suas credenciais do Firebase
     const firebaseConfig = { 
         apiKey: "AIzaSyBkq2D8JFuxzPTI2z_Iirg3rYfSFfPJRXY", 
         authDomain: "inspecao-saude-cbax.firebaseapp.com", 
@@ -147,6 +145,8 @@
         const comboData = document.getElementById("data");
         comboData.innerHTML = '<option value="">Selecione o dia...</option>';
         document.getElementById("msgVagas").style.display = "none";
+        document.getElementById("btnSalvar").disabled = true;
+
         if(configLocal[local]) {
             configLocal[local].datas.forEach(d => {
                 let opt = document.createElement("option"); opt.value = d; opt.text = d; comboData.add(opt);
@@ -159,16 +159,81 @@
         const data = document.getElementById("data").value;
         const msg = document.getElementById("msgVagas");
         const btn = document.getElementById("btnSalvar");
+        
         if(!local || !data) return;
 
         msg.style.display = "block";
         msg.innerText = "Consultando disponibilidade...";
+        msg.style.background = "#eee";
+        msg.style.color = "#333";
         btn.disabled = true;
 
-        const snapshot = await db.collection("agendamentos_dermato")
-            .where("local", "==", local).where("data", "==", data).get();
-        
-        const ocupadas = snapshot.size;
-        const disponiveis = configLocal[local].limite - ocupadas;
-        
-        if(dis
+        try {
+            const snapshot = await db.collection("agendamentos_dermato")
+                .where("local", "==", local).where("data", "==", data).get();
+            
+            const ocupadas = snapshot.size;
+            const limite = configLocal[local].limite;
+            const disponiveis = limite - ocupadas;
+
+            if (disponiveis > 0) {
+                msg.innerText = `VAGAS DISPONÍVEIS: ${disponiveis}`;
+                msg.style.background = "#d4edda";
+                msg.style.color = "#155724";
+                btn.disabled = false;
+            } else {
+                msg.innerText = "ESGOTADO PARA ESTE DIA";
+                msg.style.background = "#f8d7da";
+                msg.style.color = "#721c24";
+                btn.disabled = true;
+            }
+        } catch (e) {
+            msg.innerText = "Erro ao conectar. Tente novamente.";
+        }
+    }
+
+    async function salvar() {
+        const btn = document.getElementById("btnSalvar");
+        const dados = {
+            unidade: document.getElementById("unidadeOrigem").value,
+            posto: document.getElementById("posto").value,
+            nome: document.getElementById("nome").value,
+            rg: document.getElementById("rg").value,
+            whatsapp: document.getElementById("telefone").value,
+            email: document.getElementById("email").value,
+            local: document.getElementById("localInspecao").value,
+            data: document.getElementById("data").value,
+            dataHoraRegistro: new Date().toLocaleString()
+        };
+
+        if(!dados.unidade || !dados.nome || !dados.rg || !dados.local || !dados.data) {
+            alert("Preencha todos os campos obrigatórios!");
+            return;
+        }
+
+        btn.innerText = "SALVANDO...";
+        btn.disabled = true;
+
+        try {
+            await db.collection("agendamentos_dermato").add(dados);
+            
+            // Preenche o Comprovante
+            document.getElementById("res-nome").innerText = `${dados.posto} ${dados.nome}`;
+            document.getElementById("res-rg").innerText = dados.rg;
+            document.getElementById("res-local").innerText = dados.local;
+            document.getElementById("res-data").innerText = dados.data;
+
+            // Muda a tela
+            document.getElementById("form-content").style.display = "none";
+            document.getElementById("sucesso").style.display = "block";
+            window.scrollTo(0,0);
+        } catch (e) {
+            alert("Erro ao salvar! Verifique a internet.");
+            btn.innerText = "Confirmar Inscrição";
+            btn.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>
