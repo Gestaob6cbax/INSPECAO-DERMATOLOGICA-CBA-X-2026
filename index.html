@@ -9,27 +9,199 @@
     
     <style>
         :root { --cba-color: #fb8c00; --cba-blue: #0a2c6d; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 10px; display: flex; justify-content: center; }
-        .premium-card { width: 100%; max-width: 480px; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 8px solid var(--cba-color); }
-        header { text-align: center; margin-bottom: 20px; }
-        header img { width: 70px; margin-bottom: 10px; }
-        header h2 { color: var(--cba-blue); font-size: 1.2rem; text-transform: uppercase; margin: 5px 0; }
-        .section-title { background: var(--cba-color); color: white; padding: 8px; font-size: 0.7rem; font-weight: bold; border-radius: 5px; margin-top: 15px; text-transform: uppercase; text-align: center; }
-        label { display: block; margin-top: 12px; font-weight: 700; color: #333; font-size: 0.65rem; text-transform: uppercase; }
-        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 2px solid #dfe4ea; border-radius: 8px; box-sizing: border-box; font-size: 15px; background: #fcfcfc; outline: none; }
-        input:focus, select:focus { border-color: var(--cba-color); }
-        .vagas-info { font-size: 0.85rem; font-weight: bold; margin-top: 10px; text-align: center; padding: 10px; border-radius: 5px; display: none; }
-        .btn-confirmar { background: var(--cba-color); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 25px; text-transform: uppercase; font-size: 1rem; transition: 0.3s; }
-        .btn-confirmar:disabled { background: #ccc; cursor: not-allowed; }
-        #sucesso { display: none; text-align: center; }
-        .caixa-confirmacao { border: 2px dashed var(--cba-color); padding: 20px; border-radius: 12px; margin: 15px 0; background: #fffdfd; }
-        .nome-militar { color: var(--cba-blue); font-weight: 900; font-size: 1.1rem; text-transform: uppercase; }
-        .link-outro { display:block; margin-top:15px; cursor:pointer; font-size:0.8rem; color:var(--cba-blue); text-decoration:underline; }
-        
-        @media print { 
-            .btn-confirmar, .link-outro, #form-content, .section-title { display: none !important; } 
-            .premium-card { border: none; box-shadow: none; width: 100%; } 
-            #sucesso { display: block !important; } 
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f7f6;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .premium-card {
+            width: 100%;
+            max-width: 480px;
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-top: 8px solid var(--cba-color);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header img {
+            width: 70px;
+            margin-bottom: 10px;
+        }
+
+        header h2 {
+            color: var(--cba-blue);
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            margin: 5px 0;
+        }
+
+        .section-title {
+            background: var(--cba-color);
+            color: white;
+            padding: 8px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            border-radius: 5px;
+            margin-top: 15px;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+            font-weight: 700;
+            color: #333;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border: 2px solid #dfe4ea;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 15px;
+            background: #fcfcfc;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--cba-color);
+        }
+
+        .info-polo {
+            display: none;
+            margin-top: 10px;
+            padding: 12px;
+            border-radius: 10px;
+            background: #fff3cd;
+            color: #856404;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: left;
+            border: 1px solid #ffe69c;
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+
+        .vagas-info {
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .horario-info {
+            display: none;
+            margin-top: 10px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #fff3cd;
+            color: #856404;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-align: center;
+            border: 1px solid #ffe69c;
+        }
+
+        .btn-confirmar {
+            background: var(--cba-color);
+            color: white;
+            border: none;
+            padding: 18px;
+            width: 100%;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 25px;
+            text-transform: uppercase;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        .btn-confirmar:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        #sucesso {
+            display: none;
+            text-align: center;
+        }
+
+        .caixa-confirmacao {
+            border: 2px dashed var(--cba-color);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+            background: #ffffff;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .nome-militar {
+            color: var(--cba-blue);
+            font-weight: 900;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            text-align: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+
+        .painel-atendimento {
+            margin-top: 20px;
+            border-left: 5px solid var(--cba-color);
+            background: #fff;
+            padding: 18px;
+            border-radius: 12px;
+            text-align: left;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            white-space: pre-line;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+        }
+
+        .link-outro {
+            display: block;
+            margin-top: 15px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: var(--cba-blue);
+            text-decoration: underline;
+        }
+
+        @media print {
+            .btn-confirmar, .link-outro, #form-content, .section-title {
+                display: none !important;
+            }
+
+            .premium-card {
+                border: none;
+                box-shadow: none;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            #sucesso {
+                display: block !important;
+            }
         }
     </style>
 </head>
@@ -44,24 +216,40 @@
         </header>
 
         <div class="section-title">Bloco 1: Identificação</div>
+
         <label>Unidade de Origem (Onde serve)</label>
         <select id="unidadeOrigem">
             <option value="">Selecione sua Unidade...</option>
-            <option>CBA X</option><option>CER</option> 
-            <option>1º GMAR BOTAFOGO</option><option>2º GMAR BARRA DA TIJUCA</option>
-            <option>3º GMAR COPACABANA</option><option>4º GMAR ITAIPU</option>
-            <option>GBS BOTAFOGO</option><option>DBM 1/M PAQUETÁ</option>
-            <option>DBM 2/M PISCINÃO</option><option>DBM 3/M RECREIO</option>
-            <option>DBM 4/M GUARATIBA</option><option>DBM 5/M SEPETIBA</option>
+            <option>CBA X</option>
+            <option>CER</option>
+            <option>1º GMAR BOTAFOGO</option>
+            <option>2º GMAR BARRA DA TIJUCA</option>
+            <option>3º GMAR COPACABANA</option>
+            <option>4º GMAR ITAIPU</option>
+            <option>GBS BOTAFOGO</option>
+            <option>DBM 1/M PAQUETÁ</option>
+            <option>DBM 2/M PISCINÃO</option>
+            <option>DBM 3/M RECREIO</option>
+            <option>DBM 4/M GUARATIBA</option>
+            <option>DBM 5/M SEPETIBA</option>
             <option>DBM 6/M ITAIPU</option>
         </select>
 
         <label>Posto / Graduação</label>
         <select id="posto">
             <option value="">Selecione...</option>
-            <option>SD BM</option><option>CB BM</option><option>3º SGT BM</option><option>2º SGT BM</option><option>1º SGT BM</option>
-            <option>SUBTEN BM</option><option>2º TEN BM</option><option>1º TEN BM</option><option>CAP BM</option><option>MAJ BM</option>
-            <option>TEN CEL BM</option><option>CEL BM</option>
+            <option>SD BM</option>
+            <option>CB BM</option>
+            <option>3º SGT BM</option>
+            <option>2º SGT BM</option>
+            <option>1º SGT BM</option>
+            <option>SUBTEN BM</option>
+            <option>2º TEN BM</option>
+            <option>1º TEN BM</option>
+            <option>CAP BM</option>
+            <option>MAJ BM</option>
+            <option>TEN CEL BM</option>
+            <option>CEL BM</option>
         </select>
         
         <label>Nome Completo</label>
@@ -77,58 +265,143 @@
         <input type="email" id="email" placeholder="militar@exemplo.com">
 
         <div class="section-title">Bloco 2: Local da Inspeção</div>
+
         <label>Polo de Atendimento (Local da Inspeção)</label>
         <select id="localInspecao" onchange="carregarDatas()">
             <option value="">Selecione o Polo...</option>
-            <option value="CER">CER(Atende também 2ºGMAR-BARRA DA TIJUCA e GBS)</option>
-            <option value="BOTAFOGO">1º GMAR-BOTAFOGO (Atende também DBM1/M e DBM2/M)</option>
-            <option value="COPACABANA">3º GMAR-COPACABANA</option>
-            <option value="ITAIPU">4º GMAR ITAIPU / DBM 6/M</option>
-            <option value="RECREIO">DBM 3/M RECREIO(Atende também CBAX, DBM4/M e DBM5/M)</option>
+            <option value="CER">CER (Sede Barra + CER + GBS)</option>
+            <option value="BOTAFOGO">1º GMAR (Botafogo + Paquetá + Piscinão)</option>
+            <option value="COPACABANA">3º GMAR (Copacabana)</option>
+            <option value="ITAIPU">4º GMAR (Itaipu)</option>
+            <option value="RECREIO">RECREIO (Sede + DBMs 4/M e 5/M + CBA X)</option>
         </select>
 
+        <div id="infoPolo" class="info-polo"></div>
+
         <div class="section-title">Bloco 3: Data</div>
+
         <label>Escolha o Dia</label>
         <select id="data" onchange="verificarVagas()">
             <option value="">Selecione o Polo primeiro...</option>
         </select>
+
+        <div id="msgHorario" class="horario-info"></div>
         <div id="msgVagas" class="vagas-info"></div>
 
-      <button id="btnSalvar" class="btn-confirmar" onclick="salvar()" disabled>Confirmar Inscrição</button>
+        <button id="btnSalvar" class="btn-confirmar" onclick="salvar()" disabled>Confirmar Inscrição</button>
     </div>
 
     <div id="sucesso">
         <header>
             <img src="https://raw.githubusercontent.com/gestaob6cbax/INSPECAO-MEDICA-CBA-X-2026/main/logo_cba_x.png">
-            <h2>Agendamento Dermatologico Confirmado</h2>
-            <h3>ATENÇÃO: A partir da inauguração da unidade 2°GMAR, as inspeções baseadas na CER passarão a ser realizados neste local. Fique atento às atualizações.</h2>
+            <h2 style="letter-spacing:1px;">AGENDAMENTO DERMATOLÓGICO CONFIRMADO</h2>
+            <h3 style="font-size: 0.95rem; line-height: 1.5; color: #222;">
+                ATENÇÃO: A partir da inauguração da unidade 2º GMAR, as inspeções baseadas na CER passarão a ser realizadas neste local. Fique atento às atualizações.
+            </h3>
             <p>CBA X - 6ª Seção</p>
         </header>
+
         <div class="caixa-confirmacao">
             <div class="nome-militar" id="res-nome"></div>
             <div style="font-size: 0.85rem; margin-top: 10px; line-height: 1.6; text-align: left;">
                 🚩 RG: <span id="res-rg" style="font-weight:bold;"></span><br>
                 🚩 Local da Inspeção: <span id="res-local" style="font-weight:bold;"></span><br>
-                🚩 Data: <span id="res-data" style="font-weight:bold;"></span><br><br>
-                <center><small><b>(Modalidade: Livre Demanda no dia escolhido)</b></center></small>
+                🚩 Data: <span id="res-data" style="font-weight:bold;"></span><br>
+                🚩 Horário: <span id="res-horario" style="font-weight:bold; color:#d35400;"></span><br><br>
+                <center><small><b>(Modalidade: Livre Demanda no dia escolhido)</b></small></center>
             </div>
         </div>
+
+        <div id="res-painel" class="painel-atendimento"></div>
+
         <button class="btn-confirmar" style="background:#555" onclick="window.print()">🖨️ IMPRIMIR / SALVAR PDF</button>
         <span class="link-outro" onclick="location.reload()">Realizar outro agendamento</span>
     </div>
 </div>
 
 <script>
-    // Configurações de Datas e Limites (Mesmo padrão do Odonto)
     const configLocal = {
-        "CER": { datas: ["07/04/2026", "14/04/2026", "11/08/2026"], limite: 87 },
-        "BOTAFOGO": { datas: ["11/06/2026", "02/07/2026"], limite: 97 },
-        "COPACABANA": { datas: ["09/04/2026", "05/05/2026", "30/07/2026"], limite: 67 },
-        "ITAIPU": { datas: ["12/05/2026", "07/07/2026"], limite: 77 },
-        "RECREIO": { datas: ["22/06/2026", "06/07/2026", "20/07/2026"], limite: 87 }
+        "CER": {
+            datas: ["07/04/2026", "14/04/2026", "11/08/2026"],
+            limite: 97,
+            horario: "08:00h às 16:00h",
+            nomeExibicao: "CER (Sede Barra + CER + GBS)",
+            info: `📍 CER (Sede Barra + CER + GBS)
+📅 Datas: 07/04, 14/04 e 11/08
+⏰ Horário: 08:00h às 16:00h`,
+            painel: `PAINEL DE ATENDIMENTO - MÉDIA POR DIA
+
+📍 CER (Sede Barra + CER + GBS)
+📅 Datas: 03 dias (07/04, 14/04 e 11/08)
+⏰ Horário: 08:00h às 16:00h (8h por dia)
+📊 DIVISÃO: 97 atendimentos por dia.`
+        },
+
+        "BOTAFOGO": {
+            datas: ["11/06/2026", "02/07/2026"],
+            limite: 123,
+            horario: "08:00h às 12:00h",
+            nomeExibicao: "1º GMAR (Botafogo + Paquetá + Piscinão)",
+            info: `📍 1º GMAR (Botafogo + Paquetá + Piscinão)
+📅 Datas: 11/06 e 02/07
+⏰ Horário: 08:00h às 12:00h`,
+            painel: `PAINEL DE ATENDIMENTO - MÉDIA POR DIA
+
+📍 1º GMAR (Botafogo + Paquetá + Piscinão)
+📅 Datas: 02 dias (11/06 e 02/07)
+⏰ Horário: 08:00h às 12:00h (Apenas 4h por dia)
+📊 DIVISÃO: 123 atendimentos por dia.`
+        },
+
+        "COPACABANA": {
+            datas: ["09/04/2026", "05/05/2026", "30/07/2026"],
+            limite: 75,
+            horario: "08:00h às 12:00h",
+            nomeExibicao: "3º GMAR (Copacabana)",
+            info: `📍 3º GMAR (Copacabana)
+📅 Datas: 09/04, 05/05 e 30/07
+⏰ Horário: 08:00h às 12:00h`,
+            painel: `PAINEL DE ATENDIMENTO - MÉDIA POR DIA
+
+📍 3º GMAR (Copacabana)
+📅 Datas: 03 dias (09/04, 05/05 e 30/07)
+⏰ Horário: 08:00h às 12:00h (4h por dia)
+📊 DIVISÃO: 75 atendimentos por dia.`
+        },
+
+        "ITAIPU": {
+            datas: ["12/05/2026", "07/07/2026"],
+            limite: 82,
+            horario: "08:00h às 16:00h",
+            nomeExibicao: "4º GMAR (Itaipu)",
+            info: `📍 4º GMAR (Itaipu)
+📅 Datas: 12/05 e 07/07
+⏰ Horário: 08:00h às 16:00h`,
+            painel: `PAINEL DE ATENDIMENTO - MÉDIA POR DIA
+
+📍 4º GMAR (Itaipu)
+📅 Datas: 02 dias (12/05 e 07/07)
+⏰ Horário: 08:00h às 16:00h (8h por dia)
+📊 DIVISÃO: 82 atendimentos por dia.`
+        },
+
+        "RECREIO": {
+            datas: ["22/06/2026", "06/07/2026", "20/07/2026"],
+            limite: 67,
+            horario: "08:00h às 16:00h",
+            nomeExibicao: "RECREIO (Sede + DBMs 4/M e 5/M + CBA X)",
+            info: `📍 RECREIO (Sede + DBMs 4/M e 5/M + CBA X)
+📅 Datas: 22/06, 06/07 e 20/07
+⏰ Horário: 08:00h às 16:00h`,
+            painel: `PAINEL DE ATENDIMENTO - MÉDIA POR DIA
+
+📍 RECREIO (Sede + DBMs 4/M e 5/M + CBA X)
+📅 Datas: 03 dias (22/06, 06/07 e 20/07)
+⏰ Horário: 08:00h às 16:00h (8h por dia)
+📊 DIVISÃO: 67 atendimentos por dia.`
+        }
     };
 
-    // Suas credenciais do Firebase
     const firebaseConfig = { 
         apiKey: "AIzaSyBkq2D8JFuxzPTI2z_Iirg3rYfSFfPJRXY", 
         authDomain: "inspecao-saude-cbax.firebaseapp.com", 
@@ -144,14 +417,29 @@
     function carregarDatas() {
         const local = document.getElementById("localInspecao").value;
         const comboData = document.getElementById("data");
-        comboData.innerHTML = '<option value="">Selecione o dia...</option>';
-        document.getElementById("msgVagas").style.display = "none";
-        document.getElementById("btnSalvar").disabled = true;
+        const infoPolo = document.getElementById("infoPolo");
+        const msgVagas = document.getElementById("msgVagas");
+        const msgHorario = document.getElementById("msgHorario");
+        const btnSalvar = document.getElementById("btnSalvar");
 
-        if(configLocal[local]) {
+        comboData.innerHTML = '<option value="">Selecione o dia...</option>';
+        msgVagas.style.display = "none";
+        msgHorario.style.display = "none";
+        btnSalvar.disabled = true;
+
+        if (configLocal[local]) {
             configLocal[local].datas.forEach(d => {
-                let opt = document.createElement("option"); opt.value = d; opt.text = d; comboData.add(opt);
+                let opt = document.createElement("option");
+                opt.value = d;
+                opt.text = d;
+                comboData.add(opt);
             });
+
+            infoPolo.style.display = "block";
+            infoPolo.innerText = configLocal[local].info;
+        } else {
+            infoPolo.style.display = "none";
+            infoPolo.innerText = "";
         }
     }
 
@@ -160,8 +448,12 @@
         const data = document.getElementById("data").value;
         const msg = document.getElementById("msgVagas");
         const btn = document.getElementById("btnSalvar");
-        
-        if(!local || !data) return;
+        const msgHorario = document.getElementById("msgHorario");
+
+        if (!local || !data) return;
+
+        msgHorario.style.display = "block";
+        msgHorario.innerText = `⏰ Horário de atendimento no dia escolhido: ${configLocal[local].horario}`;
 
         msg.style.display = "block";
         msg.innerText = "Consultando disponibilidade...";
@@ -171,43 +463,52 @@
 
         try {
             const snapshot = await db.collection("agendamentos_dermato")
-                .where("local", "==", local).where("data", "==", data).get();
-            
+                .where("local", "==", local)
+                .where("data", "==", data)
+                .get();
+
             const ocupadas = snapshot.size;
             const limite = configLocal[local].limite;
             const disponiveis = limite - ocupadas;
 
             if (disponiveis > 0) {
-                msg.innerText = `VAGAS DISPONÍVEIS: ${disponiveis}`;
+                msg.innerText = `VAGAS PREENCHIDAS: ${ocupadas} | VAGAS DISPONÍVEIS: ${disponiveis} | LIMITE DO DIA: ${limite}`;
                 msg.style.background = "#d4edda";
                 msg.style.color = "#155724";
                 btn.disabled = false;
             } else {
-                msg.innerText = "ESGOTADO PARA ESTE DIA";
+                msg.innerText = `VAGAS PREENCHIDAS: ${ocupadas} | LIMITE DO DIA: ${limite} | ESGOTADO PARA ESTE DIA`;
                 msg.style.background = "#f8d7da";
                 msg.style.color = "#721c24";
                 btn.disabled = true;
             }
         } catch (e) {
             msg.innerText = "Erro ao conectar. Tente novamente.";
+            msg.style.background = "#f8d7da";
+            msg.style.color = "#721c24";
+            btn.disabled = true;
         }
     }
 
     async function salvar() {
         const btn = document.getElementById("btnSalvar");
+        const localSelecionado = document.getElementById("localInspecao").value;
+        const rgInformado = document.getElementById("rg").value.trim();
+
         const dados = {
             unidade: document.getElementById("unidadeOrigem").value,
             posto: document.getElementById("posto").value,
-            nome: document.getElementById("nome").value,
-            rg: document.getElementById("rg").value,
-            whatsapp: document.getElementById("telefone").value,
-            email: document.getElementById("email").value,
-            local: document.getElementById("localInspecao").value,
+            nome: document.getElementById("nome").value.trim(),
+            rg: rgInformado,
+            whatsapp: document.getElementById("telefone").value.trim(),
+            email: document.getElementById("email").value.trim(),
+            local: localSelecionado,
             data: document.getElementById("data").value,
+            horario: configLocal[localSelecionado]?.horario || "",
             dataHoraRegistro: new Date().toLocaleString()
         };
 
-        if(!dados.unidade || !dados.nome || !dados.rg || !dados.local || !dados.data) {
+        if (!dados.unidade || !dados.nome || !dados.rg || !dados.local || !dados.data) {
             alert("Preencha todos os campos obrigatórios!");
             return;
         }
@@ -216,18 +517,45 @@
         btn.disabled = true;
 
         try {
-            await db.collection("agendamentos_dermato").add(dados);
-            
-            // Preenche o Comprovante
-            document.getElementById("res-nome").innerText = `${dados.posto} ${dados.nome}`;
-            document.getElementById("res-rg").innerText = dados.rg;
-            document.getElementById("res-local").innerText = dados.local;
-            document.getElementById("res-data").innerText = dados.data;
+            const rgExistente = await db.collection("agendamentos_dermato")
+                .where("rg", "==", dados.rg)
+                .get();
 
-            // Muda a tela
+            if (!rgExistente.empty) {
+                alert("Já existe um agendamento realizado para este RG. Não é permitido mais de um agendamento por militar.");
+                btn.innerText = "Confirmar Inscrição";
+                btn.disabled = false;
+                return;
+            }
+
+            const vagasSnapshot = await db.collection("agendamentos_dermato")
+                .where("local", "==", dados.local)
+                .where("data", "==", dados.data)
+                .get();
+
+            const ocupadas = vagasSnapshot.size;
+            const limite = configLocal[dados.local].limite;
+
+            if (ocupadas >= limite) {
+                alert("Este dia já está com as vagas esgotadas.");
+                btn.innerText = "Confirmar Inscrição";
+                btn.disabled = false;
+                await verificarVagas();
+                return;
+            }
+
+            await db.collection("agendamentos_dermato").add(dados);
+
+            document.getElementById("res-nome").innerText = `${dados.posto} ${dados.nome}`.trim();
+            document.getElementById("res-rg").innerText = dados.rg;
+            document.getElementById("res-local").innerText = configLocal[localSelecionado].nomeExibicao;
+            document.getElementById("res-data").innerText = dados.data;
+            document.getElementById("res-horario").innerText = dados.horario;
+            document.getElementById("res-painel").innerText = configLocal[localSelecionado].painel;
+
             document.getElementById("form-content").style.display = "none";
             document.getElementById("sucesso").style.display = "block";
-            window.scrollTo(0,0);
+            window.scrollTo(0, 0);
         } catch (e) {
             alert("Erro ao salvar! Verifique a internet.");
             btn.innerText = "Confirmar Inscrição";
