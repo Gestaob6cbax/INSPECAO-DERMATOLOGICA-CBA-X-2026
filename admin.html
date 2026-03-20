@@ -113,6 +113,7 @@
             text-transform: uppercase;
             margin: 0;
             min-height: 34px;
+            line-height: 1.4;
         }
 
         .card-count p {
@@ -149,6 +150,7 @@
             border-radius: 999px;
             font-weight: bold;
             display: inline-block;
+            font-size: 11px;
         }
 
         .status-warn {
@@ -158,6 +160,7 @@
             border-radius: 999px;
             font-weight: bold;
             display: inline-block;
+            font-size: 11px;
         }
 
         .status-danger {
@@ -167,6 +170,7 @@
             border-radius: 999px;
             font-weight: bold;
             display: inline-block;
+            font-size: 11px;
         }
 
         .toolbar {
@@ -262,7 +266,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 1400px;
+            min-width: 1450px;
         }
 
         th {
@@ -300,11 +304,6 @@
             font-weight: bold;
         }
 
-        .mini {
-            font-size: 11px;
-            color: #777;
-        }
-
         .badge-polo {
             background: #fff3e0;
             color: var(--cba-orange-dark);
@@ -320,6 +319,11 @@
             color: var(--cba-blue);
             font-weight: bold;
             margin-left: auto;
+        }
+
+        .mini {
+            font-size: 11px;
+            color: #777;
         }
 
         @media (max-width: 900px) {
@@ -471,11 +475,7 @@
                 ...doc.data()
             }));
 
-            todosOsDados.sort((a, b) => {
-                const dataA = parseDataBR(a.data);
-                const dataB = parseDataBR(b.data);
-                return dataA - dataB;
-            });
+            todosOsDados.sort((a, b) => parseDataBR(a.data) - parseDataBR(b.data));
 
             dadosFiltrados = [...todosOsDados];
             renderizar(dadosFiltrados);
@@ -516,9 +516,7 @@
                     <td>${d.whatsapp || "-"}</td>
                     <td>${d.email || "-"}</td>
                     <td><span class="badge-polo">${polo}</span></td>
-                    <td>
-                        <div>${d.dataHoraRegistro || "-"}</div>
-                    </td>
+                    <td>${d.dataHoraRegistro || "-"}</td>
                     <td>
                         <button class="btn-del" onclick="excluir('${d.id}', '${(d.nome || '').replace(/'/g, "\\'")}')">🗑️</button>
                     </td>
@@ -530,6 +528,7 @@
             html || "<tr><td colspan='12' style='text-align:center;'>Nenhum registro encontrado.</td></tr>";
 
         document.getElementById("totalGeral").innerText = lista.length;
+
         atualizarCardsUnidades(unidadesMap);
         atualizarCardsPolos(polosMap);
         atualizarCardsOcupacao();
@@ -538,23 +537,23 @@
     }
 
     function atualizarCardsUnidades(unidadesMap) {
-        let uniHtml = "";
+        let html = "";
 
         Object.keys(unidadesMap).sort().forEach(un => {
-            uniHtml += `<div class="card-count"><h4>${un}</h4><p>${unidadesMap[un]}</p></div>`;
+            html += `<div class="card-count"><h4>${un}</h4><p>${unidadesMap[un]}</p></div>`;
         });
 
-        document.getElementById("gridUnidades").innerHTML = uniHtml || "<div class='mini'>Sem dados.</div>";
+        document.getElementById("gridUnidades").innerHTML = html || "<div class='mini'>Sem dados.</div>";
     }
 
     function atualizarCardsPolos(polosMap) {
-        let polosHtml = "";
+        let html = "";
 
         Object.keys(polosMap).sort().forEach(p => {
-            polosHtml += `<div class="card-count"><h4>${p}</h4><p>${polosMap[p]}</p></div>`;
+            html += `<div class="card-count"><h4>${p}</h4><p>${polosMap[p]}</p></div>`;
         });
 
-        document.getElementById("gridPolos").innerHTML = polosHtml || "<div class='mini'>Sem dados.</div>";
+        document.getElementById("gridPolos").innerHTML = html || "<div class='mini'>Sem dados.</div>";
     }
 
     function atualizarCardsOcupacao() {
@@ -654,25 +653,27 @@
 
     function atualizarCheckTodos() {
         const checkTodos = document.getElementById("checkTodos");
+
         if (!dadosFiltrados.length) {
             checkTodos.checked = false;
             return;
         }
 
-        const todosMarcados = dadosFiltrados.every(d => selecionados.has(d.id));
-        checkTodos.checked = todosMarcados;
+        checkTodos.checked = dadosFiltrados.every(d => selecionados.has(d.id));
     }
 
     async function excluir(id, nome) {
-        if (confirm(`Deseja excluir o agendamento de ${nome}?`)) {
-            try {
-                await db.collection("agendamentos_dermato").doc(id).delete();
-                selecionados.delete(id);
-                await carregarDados();
-            } catch (error) {
-                alert("Erro ao excluir o agendamento.");
-                console.error(error);
-            }
+        if (!confirm(`Deseja excluir o agendamento de ${nome}?\n\nA vaga voltará a ficar disponível e o militar poderá agendar novamente com o mesmo RG.`)) {
+            return;
+        }
+
+        try {
+            await db.collection("agendamentos_dermato").doc(id).delete();
+            selecionados.delete(id);
+            await carregarDados();
+        } catch (error) {
+            alert("Erro ao excluir o agendamento.");
+            console.error(error);
         }
     }
 
@@ -684,7 +685,7 @@
             return;
         }
 
-        if (!confirm(`Deseja excluir ${ids.length} agendamento(s) selecionado(s)?`)) {
+        if (!confirm(`Deseja excluir ${ids.length} agendamento(s) selecionado(s)?\n\nAs vagas voltarão a ficar disponíveis e os militares poderão agendar novamente com o mesmo RG.`)) {
             return;
         }
 
