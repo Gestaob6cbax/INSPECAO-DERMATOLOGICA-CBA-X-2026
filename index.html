@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dermatologia 2026 - CBA X</title>
+    <title>Agendamento Dermatológico 2026 - CBA X</title>
+
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style>
-        :root { --cba-color: #fb8c00; --cba-blue: #0a2c6d; }
+        :root {
+            --cba-color: #fb8c00;
+            --cba-blue: #0a2c6d;
+        }
 
         body {
             font-family: 'Segoe UI', sans-serif;
@@ -165,19 +170,6 @@
             margin-bottom: 10px;
         }
 
-        .painel-atendimento {
-            margin-top: 20px;
-            border-left: 5px solid var(--cba-color);
-            background: #fff;
-            padding: 18px;
-            border-radius: 12px;
-            text-align: left;
-            font-size: 0.9rem;
-            line-height: 1.7;
-            white-space: pre-line;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
-        }
-
         .link-outro {
             display: block;
             margin-top: 15px;
@@ -210,7 +202,7 @@
 <div class="premium-card">
     <div id="form-content">
         <header>
-            <img src="https://raw.githubusercontent.com/gestaob6cbax/INSPECAO-MEDICA-CBA-X-2026/main/logo_cba_x.png">
+            <img src="https://raw.githubusercontent.com/gestaob6cbax/INSPECAO-MEDICA-CBA-X-2026/main/logo_cba_x.png" alt="Logo CBA X">
             <h2>Inspeção Dermatológica 2026</h2>
             <p style="font-weight: bold; font-size: 0.7rem; color: #666;">CBA X - 6ª Seção (ADM)</p>
         </header>
@@ -222,46 +214,45 @@
             <option value="">Selecione sua Unidade...</option>
             <option>CBA X</option>
             <option>CER</option>
-            <option>1º GMAR BOTAFOGO</option>
-            <option>2º GMAR BARRA DA TIJUCA</option>
-            <option>3º GMAR COPACABANA</option>
-            <option>4º GMAR ITAIPU</option>
-            <option>GBS BOTAFOGO</option>
-            <option>DBM 1/M PAQUETÁ</option>
-            <option>DBM 2/M PISCINÃO</option>
-            <option>DBM 3/M RECREIO</option>
-            <option>DBM 4/M GUARATIBA</option>
-            <option>DBM 5/M SEPETIBA</option>
-            <option>DBM 6/M ITAIPU</option>
+            <option>1º GMAR (Botafogo)</option>
+            <option>2º GMAR (Barra da Tijuca)</option>
+            <option>3º GMAR (Copacabana)</option>
+            <option>4º GMAR (Itaipu)</option>
+            <option>DBM 1/M (Paquetá)</option>
+            <option>DBM 2/M (Piscinão de Ramos)</option>
+            <option>DBM 3/M (Recreio)</option>
+            <option>DBM 4/M (Barra de Guaratiba)</option>
+            <option>DBM 5/M (Sepetiba)</option>
+            <option>DBM 6/M (Itaipu)</option>
         </select>
 
-        <label>Posto / Graduação</label>
+        <label>Posto/Graduação</label>
         <select id="posto">
             <option value="">Selecione...</option>
-            <option>SD BM</option>
-            <option>CB BM</option>
-            <option>3º SGT BM</option>
-            <option>2º SGT BM</option>
-            <option>1º SGT BM</option>
-            <option>SUBTEN BM</option>
-            <option>2º TEN BM</option>
-            <option>1º TEN BM</option>
-            <option>CAP BM</option>
-            <option>MAJ BM</option>
-            <option>TEN CEL BM</option>
             <option>CEL BM</option>
+            <option>TEN CEL BM</option>
+            <option>MAJ BM</option>
+            <option>CAP BM</option>
+            <option>1º TEN BM</option>
+            <option>2º TEN BM</option>
+            <option>SUBTEN BM</option>
+            <option>1º SGT BM</option>
+            <option>2º SGT BM</option>
+            <option>3º SGT BM</option>
+            <option>CB BM</option>
+            <option>SD BM</option>
         </select>
-        
+
         <label>Nome Completo</label>
-        <input type="text" id="nome" placeholder="NOME DO MILITAR" oninput="this.value = this.value.toUpperCase()">
-        
+        <input type="text" id="nome" placeholder="NOME COMPLETO" oninput="this.value = this.value.toUpperCase()">
+
         <label>RG Militar</label>
         <input type="number" id="rg" placeholder="Somente números">
-        
+
         <label>WhatsApp</label>
-        <input type="tel" id="telefone" placeholder="(XX) 9XXXX-XXXX">
-        
-        <label>E-mail</label>
+        <input type="text" id="telefone" placeholder="(XX) 9XXXX-XXXX">
+
+        <label>Email</label>
         <input type="email" id="email" placeholder="militar@exemplo.com">
 
         <div class="section-title">Bloco 2: Local da Inspeção</div>
@@ -293,7 +284,7 @@
 
     <div id="sucesso">
         <header>
-            <img src="https://raw.githubusercontent.com/gestaob6cbax/INSPECAO-MEDICA-CBA-X-2026/main/logo_cba_x.png">
+            <img src="https://raw.githubusercontent.com/gestaob6cbax/INSPECAO-MEDICA-CBA-X-2026/main/logo_cba_x.png" alt="Logo CBA X">
             <h2 style="letter-spacing:1px;">AGENDAMENTO DERMATOLÓGICO CONFIRMADO</h2>
             <h3 style="font-size: 0.95rem; line-height: 1.5; color: #222;">
                 ATENÇÃO: A partir da inauguração da unidade 2º GMAR, as inspeções baseadas na CER passarão a ser realizadas neste local. Fique atento às atualizações.
@@ -312,14 +303,29 @@
             </div>
         </div>
 
-        <div id="res-painel" class="painel-atendimento"></div>
-
-        <button class="btn-confirmar" style="background:#555" onclick="window.print()">🖨️ IMPRIMIR / SALVAR PDF</button>
+        <button class="btn-confirmar" style="background:#555" onclick="imprimirComprovante()">🖨️ IMPRIMIR / SALVAR PDF</button>
         <span class="link-outro" onclick="location.reload()">Realizar outro agendamento</span>
     </div>
 </div>
 
 <script>
+    const { jsPDF } = window.jspdf;
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBkq2D8JFuxzPTI2z_Iirg3rYfSFfPJRXY",
+        authDomain: "inspecao-saude-cbax.firebaseapp.com",
+        projectId: "inspecao-saude-cbax",
+        storageBucket: "inspecao-saude-cbax.firebasestorage.app",
+        messagingSenderId: "1011281662526",
+        appId: "1:1011281662526:web:1028e8a8d140684e98376f"
+    };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+
+    const db = firebase.firestore();
+
     const configLocal = {
         "CER": {
             datas: ["07/04/2026", "14/04/2026", "11/08/2026"],
@@ -328,13 +334,7 @@
             nomeExibicao: "CER (Sede Barra + CER + GBS)",
             info: `📍 CER (Sede Barra + CER + GBS)
 📅 Datas: 07/04, 14/04 e 11/08
-⏰ Horário: 08:00h às 16:00h`,
-            painel: `PAINEL DE ATENDIMENTO - MÉDIA POR DIA
-
-📍 CER (Sede Barra + CER + GBS)
-📅 Datas: 03 dias (07/04, 14/04 e 11/08)
-⏰ Horário: 08:00h às 16:00h (8h por dia)
-📊 DIVISÃO: 97 atendimentos por dia.`
+⏰ Horário: 08:00h às 16:00h`
         },
 
         "BOTAFOGO": {
@@ -344,13 +344,7 @@
             nomeExibicao: "1º GMAR (Botafogo + Paquetá + Piscinão)",
             info: `📍 1º GMAR (Botafogo + Paquetá + Piscinão)
 📅 Datas: 11/06 e 02/07
-⏰ Horário: 08:00h às 12:00h`,
-            painel: `PAINEL DE ATENDIMENTO - MÉDIA POR DIA
-
-📍 1º GMAR (Botafogo + Paquetá + Piscinão)
-📅 Datas: 02 dias (11/06 e 02/07)
-⏰ Horário: 08:00h às 12:00h (Apenas 4h por dia)
-📊 DIVISÃO: 123 atendimentos por dia.`
+⏰ Horário: 08:00h às 12:00h`
         },
 
         "COPACABANA": {
@@ -360,13 +354,7 @@
             nomeExibicao: "3º GMAR (Copacabana)",
             info: `📍 3º GMAR (Copacabana)
 📅 Datas: 09/04, 05/05 e 30/07
-⏰ Horário: 08:00h às 12:00h`,
-            painel: `PAINEL DE ATENDIMENTO - MÉDIA POR DIA
-
-📍 3º GMAR (Copacabana)
-📅 Datas: 03 dias (09/04, 05/05 e 30/07)
-⏰ Horário: 08:00h às 12:00h (4h por dia)
-📊 DIVISÃO: 75 atendimentos por dia.`
+⏰ Horário: 08:00h às 12:00h`
         },
 
         "ITAIPU": {
@@ -376,13 +364,7 @@
             nomeExibicao: "4º GMAR (Itaipu)",
             info: `📍 4º GMAR (Itaipu)
 📅 Datas: 12/05 e 07/07
-⏰ Horário: 08:00h às 16:00h`,
-            painel: `PAINEL DE ATENDIMENTO - MÉDIA POR DIA
-
-📍 4º GMAR (Itaipu)
-📅 Datas: 02 dias (12/05 e 07/07)
-⏰ Horário: 08:00h às 16:00h (8h por dia)
-📊 DIVISÃO: 82 atendimentos por dia.`
+⏰ Horário: 08:00h às 16:00h`
         },
 
         "RECREIO": {
@@ -392,27 +374,28 @@
             nomeExibicao: "RECREIO (Sede + DBMs 4/M e 5/M + CBA X)",
             info: `📍 RECREIO (Sede + DBMs 4/M e 5/M + CBA X)
 📅 Datas: 22/06, 06/07 e 20/07
-⏰ Horário: 08:00h às 16:00h`,
-            painel: `PAINEL DE ATENDIMENTO - MÉDIA POR DIA
-
-📍 RECREIO (Sede + DBMs 4/M e 5/M + CBA X)
-📅 Datas: 03 dias (22/06, 06/07 e 20/07)
-⏰ Horário: 08:00h às 16:00h (8h por dia)
-📊 DIVISÃO: 67 atendimentos por dia.`
+⏰ Horário: 08:00h às 16:00h`
         }
     };
 
-    const firebaseConfig = { 
-        apiKey: "AIzaSyBkq2D8JFuxzPTI2z_Iirg3rYfSFfPJRXY", 
-        authDomain: "inspecao-saude-cbax.firebaseapp.com", 
-        projectId: "inspecao-saude-cbax", 
-        storageBucket: "inspecao-saude-cbax.firebasestorage.app", 
-        messagingSenderId: "1011281662526", 
-        appId: "1:1011281662526:web:1028e8a8d140684e98376f" 
-    };
+    function normalizarRG(valor) {
+        return String(valor || "").replace(/\D/g, "").trim();
+    }
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    function gerarIdVaga(local, data) {
+        return `${local}_${data.replaceAll("/", "-")}`;
+    }
+
+    async function obterVagasRestantes(local, data) {
+        const vagaRef = db.collection("controle_vagas_dermato").doc(gerarIdVaga(local, data));
+        const vagaDoc = await vagaRef.get();
+
+        if (vagaDoc.exists) {
+            return Number(vagaDoc.data().vagasRestantes || 0);
+        }
+
+        return Number(configLocal[local]?.limite || 0);
+    }
 
     function carregarDatas() {
         const local = document.getElementById("localInspecao").value;
@@ -429,7 +412,7 @@
 
         if (configLocal[local]) {
             configLocal[local].datas.forEach(d => {
-                let opt = document.createElement("option");
+                const opt = document.createElement("option");
                 opt.value = d;
                 opt.text = d;
                 comboData.add(opt);
@@ -450,7 +433,12 @@
         const btn = document.getElementById("btnSalvar");
         const msgHorario = document.getElementById("msgHorario");
 
-        if (!local || !data) return;
+        if (!local || !data) {
+            msg.style.display = "none";
+            msgHorario.style.display = "none";
+            btn.disabled = true;
+            return;
+        }
 
         msgHorario.style.display = "block";
         msgHorario.innerText = `⏰ Horário de atendimento no dia escolhido: ${configLocal[local].horario}`;
@@ -462,17 +450,13 @@
         btn.disabled = true;
 
         try {
-            const snapshot = await db.collection("agendamentos_dermato")
-                .where("local", "==", local)
-                .where("data", "==", data)
-                .get();
-
-            const ocupadas = snapshot.size;
             const limite = configLocal[local].limite;
-            const disponiveis = limite - ocupadas;
+            const livres = await obterVagasRestantes(local, data);
+            let ocupadas = limite - livres;
+            if (ocupadas < 0) ocupadas = 0;
 
-            if (disponiveis > 0) {
-                msg.innerText = `VAGAS PREENCHIDAS: ${ocupadas} | VAGAS DISPONÍVEIS: ${disponiveis} | LIMITE DO DIA: ${limite}`;
+            if (livres > 0) {
+                msg.innerText = `VAGAS PREENCHIDAS: ${ocupadas} | VAGAS DISPONÍVEIS: ${livres} | LIMITE DO DIA: ${limite}`;
                 msg.style.background = "#d4edda";
                 msg.style.color = "#155724";
                 btn.disabled = false;
@@ -483,7 +467,7 @@
                 btn.disabled = true;
             }
         } catch (e) {
-            msg.innerText = "Erro ao conectar. Tente novamente.";
+            msg.innerText = "Erro ao consultar disponibilidade. Tente novamente.";
             msg.style.background = "#f8d7da";
             msg.style.color = "#721c24";
             btn.disabled = true;
@@ -492,24 +476,26 @@
 
     async function salvar() {
         const btn = document.getElementById("btnSalvar");
+
         const localSelecionado = document.getElementById("localInspecao").value;
-        const rgInformado = document.getElementById("rg").value.trim();
+        const rgInformado = normalizarRG(document.getElementById("rg").value);
 
         const dados = {
             unidade: document.getElementById("unidadeOrigem").value,
             posto: document.getElementById("posto").value,
-            nome: document.getElementById("nome").value.trim(),
+            nome: document.getElementById("nome").value.trim().toUpperCase(),
             rg: rgInformado,
             whatsapp: document.getElementById("telefone").value.trim(),
             email: document.getElementById("email").value.trim(),
             local: localSelecionado,
             data: document.getElementById("data").value,
             horario: configLocal[localSelecionado]?.horario || "",
+            localExibicao: configLocal[localSelecionado]?.nomeExibicao || "",
             dataHoraRegistro: new Date().toLocaleString()
         };
 
-        if (!dados.unidade || !dados.nome || !dados.rg || !dados.local || !dados.data) {
-            alert("Preencha todos os campos obrigatórios!");
+        if (!dados.unidade || !dados.posto || !dados.nome || !dados.rg || !dados.local || !dados.data) {
+            alert("Preencha todos os campos obrigatórios.");
             return;
         }
 
@@ -517,50 +503,102 @@
         btn.disabled = true;
 
         try {
-            const rgExistente = await db.collection("agendamentos_dermato")
-                .where("rg", "==", dados.rg)
-                .get();
+            const rgRef = db.collection("controle_rg_dermato").doc(dados.rg);
+            const vagaRef = db.collection("controle_vagas_dermato").doc(gerarIdVaga(dados.local, dados.data));
+            const novoAgendamentoRef = db.collection("agendamentos_dermato").doc();
 
-            if (!rgExistente.empty) {
-                alert("Já existe um agendamento realizado para este RG. Não é permitido mais de um agendamento por militar.");
-                btn.innerText = "Confirmar Inscrição";
-                btn.disabled = false;
-                return;
-            }
+            await db.runTransaction(async (transaction) => {
+                const rgLockDoc = await transaction.get(rgRef);
+                if (rgLockDoc.exists) {
+                    throw new Error("Já existe um agendamento realizado para este RG. Não é permitido mais de um agendamento por militar.");
+                }
 
-            const vagasSnapshot = await db.collection("agendamentos_dermato")
-                .where("local", "==", dados.local)
-                .where("data", "==", dados.data)
-                .get();
+                const rgExistenteQuery = db.collection("agendamentos_dermato")
+                    .where("rg", "==", dados.rg)
+                    .limit(1);
 
-            const ocupadas = vagasSnapshot.size;
-            const limite = configLocal[dados.local].limite;
+                const rgExistenteSnap = await transaction.get(rgExistenteQuery);
+                if (!rgExistenteSnap.empty) {
+                    throw new Error("Já existe um agendamento realizado para este RG. Não é permitido mais de um agendamento por militar.");
+                }
 
-            if (ocupadas >= limite) {
-                alert("Este dia já está com as vagas esgotadas.");
-                btn.innerText = "Confirmar Inscrição";
-                btn.disabled = false;
-                await verificarVagas();
-                return;
-            }
+                const vagaDoc = await transaction.get(vagaRef);
+                const limite = Number(configLocal[dados.local].limite);
+                let vagasRestantesAtuais = limite;
 
-            await db.collection("agendamentos_dermato").add(dados);
+                if (vagaDoc.exists) {
+                    vagasRestantesAtuais = Number(vagaDoc.data().vagasRestantes || 0);
+                }
+
+                if (vagasRestantesAtuais <= 0) {
+                    throw new Error("Este dia já está com as vagas esgotadas.");
+                }
+
+                transaction.set(novoAgendamentoRef, {
+                    unidade: dados.unidade,
+                    posto: dados.posto,
+                    nome: dados.nome,
+                    rg: dados.rg,
+                    whatsapp: dados.whatsapp,
+                    email: dados.email,
+                    local: dados.local,
+                    localExibicao: dados.localExibicao,
+                    data: dados.data,
+                    horario: dados.horario,
+                    dataHoraRegistro: dados.dataHoraRegistro,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                transaction.set(rgRef, {
+                    rg: dados.rg,
+                    criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                transaction.set(vagaRef, {
+                    local: dados.local,
+                    data: dados.data,
+                    limite: limite,
+                    vagasRestantes: vagasRestantesAtuais - 1,
+                    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+            });
 
             document.getElementById("res-nome").innerText = `${dados.posto} ${dados.nome}`.trim();
             document.getElementById("res-rg").innerText = dados.rg;
-            document.getElementById("res-local").innerText = configLocal[localSelecionado].nomeExibicao;
+            document.getElementById("res-local").innerText = dados.localExibicao;
             document.getElementById("res-data").innerText = dados.data;
             document.getElementById("res-horario").innerText = dados.horario;
-            document.getElementById("res-painel").innerText = configLocal[localSelecionado].painel;
 
             document.getElementById("form-content").style.display = "none";
             document.getElementById("sucesso").style.display = "block";
             window.scrollTo(0, 0);
+
         } catch (e) {
-            alert("Erro ao salvar! Verifique a internet.");
+            alert(e.message || "Erro ao salvar! Verifique a internet.");
             btn.innerText = "Confirmar Inscrição";
             btn.disabled = false;
+            await verificarVagas();
         }
+    }
+
+    function imprimirComprovante() {
+        const nome = document.getElementById("res-nome").innerText;
+        const rg = document.getElementById("res-rg").innerText;
+        const local = document.getElementById("res-local").innerText;
+        const data = document.getElementById("res-data").innerText;
+        const horario = document.getElementById("res-horario").innerText;
+
+        const doc = new jsPDF();
+        doc.setFontSize(16);
+        doc.text("CBA X - COMPROVANTE DE AGENDAMENTO DERMATOLÓGICO 2026", 10, 20);
+        doc.setFontSize(12);
+        doc.text(`Militar: ${nome}`, 10, 40);
+        doc.text(`RG: ${rg}`, 10, 50);
+        doc.text(`Local da Inspeção: ${local}`, 10, 60);
+        doc.text(`Data: ${data}`, 10, 70);
+        doc.text(`Horário: ${horario}`, 10, 80);
+        doc.text("Modalidade: Livre Demanda no dia escolhido", 10, 95);
+        doc.save(`Agendamento_Dermatologico_${rg}.pdf`);
     }
 </script>
 
