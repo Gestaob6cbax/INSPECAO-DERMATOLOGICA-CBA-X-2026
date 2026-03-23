@@ -474,112 +474,104 @@
         }
     }
 
-    async function salvar() {
-        const btn = document.getElementById("btnSalvar");
+  async function salvar() {
+    const btn = document.getElementById("btnSalvar");
 
-        const localSelecionado = document.getElementById("localInspecao").value;
-        const rgInformado = normalizarRG(document.getElementById("rg").value);
+    const localSelecionado = document.getElementById("localInspecao").value;
+    const rgInformado = normalizarRG(document.getElementById("rg").value);
 
-        const dados = {
-            unidade: document.getElementById("unidadeOrigem").value,
-            posto: document.getElementById("posto").value,
-            nome: document.getElementById("nome").value.trim().toUpperCase(),
-            rg: rgInformado,
-            whatsapp: document.getElementById("telefone").value.trim(),
-            email: document.getElementById("email").value.trim(),
-            local: localSelecionado,
-            data: document.getElementById("data").value,
-            horario: configLocal[localSelecionado]?.horario || "",
-            localExibicao: configLocal[localSelecionado]?.nomeExibicao || "",
-            dataHoraRegistro: new Date().toLocaleString()
-        };
+    const dados = {
+        unidade: document.getElementById("unidadeOrigem").value,
+        posto: document.getElementById("posto").value,
+        nome: document.getElementById("nome").value.trim().toUpperCase(),
+        rg: rgInformado,
+        whatsapp: document.getElementById("telefone").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        local: localSelecionado,
+        data: document.getElementById("data").value,
+        horario: configLocal[localSelecionado]?.horario || "",
+        localExibicao: configLocal[localSelecionado]?.nomeExibicao || "",
+        dataHoraRegistro: new Date().toLocaleString()
+    };
 
-        if (!dados.unidade || !dados.posto || !dados.nome || !dados.rg || !dados.local || !dados.data) {
-            alert("Preencha todos os campos obrigatórios.");
-            return;
-        }
+    if (!dados.unidade || !dados.posto || !dados.nome || !dados.rg || !dados.local || !dados.data) {
+        alert("Preencha todos os campos obrigatórios.");
+        return;
+    }
 
-        btn.innerText = "SALVANDO...";
-        btn.disabled = true;
+    btn.innerText = "SALVANDO...";
+    btn.disabled = true;
 
-        try {
-            const rgRef = db.collection("controle_rg_dermato").doc(dados.rg);
-            const vagaRef = db.collection("controle_vagas_dermato").doc(gerarIdVaga(dados.local, dados.data));
-            const novoAgendamentoRef = db.collection("agendamentos_dermato").doc();
+    try {
+        const rgRef = db.collection("controle_rg_dermato").doc(dados.rg);
+        const vagaRef = db.collection("controle_vagas_dermato").doc(gerarIdVaga(dados.local, dados.data));
+        const novoAgendamentoRef = db.collection("agendamentos_dermato").doc();
 
-            await db.runTransaction(async (transaction) => {
-                const rgLockDoc = await transaction.get(rgRef);
-                if (rgLockDoc.exists) {
-                    throw new Error("Já existe um agendamento realizado para este RG. Não é permitido mais de um agendamento por militar.");
-                }
+        await db.runTransaction(async (transaction) => {
+            const rgLockDoc = await transaction.get(rgRef);
 
-                const rgExistenteQuery = db.collection("agendamentos_dermato")
-                    .where("rg", "==", dados.rg)
-                    .limit(1);
+            if (rgLockDoc.exists) {
+                throw new Error("Já existe um agendamento realizado para este RG. Não é permitido mais de um agendamento por militar.");
+            }
 
-                const rgExistenteSnap = await transaction.get(rgExistenteQuery);
-                if (!rgExistenteSnap.empty) {
-                    throw new Error("Já existe um agendamento realizado para este RG. Não é permitido mais de um agendamento por militar.");
-                }
+            const vagaDoc = await transaction.get(vagaRef);
+            const limite = Number(configLocal[dados.local].limite);
+            let vagasRestantesAtuais = limite;
 
-                const vagaDoc = await transaction.get(vagaRef);
-                const limite = Number(configLocal[dados.local].limite);
-                let vagasRestantesAtuais = limite;
+            if (vagaDoc.exists) {
+                vagasRestantesAtuais = Number(vagaDoc.data().vagasRestantes || 0);
+            }
 
-                if (vagaDoc.exists) {
-                    vagasRestantesAtuais = Number(vagaDoc.data().vagasRestantes || 0);
-                }
+            if (vagasRestantesAtuais <= 0) {
+                throw new Error("Este dia já está com as vagas esgotadas.");
+            }
 
-                if (vagasRestantesAtuais <= 0) {
-                    throw new Error("Este dia já está com as vagas esgotadas.");
-                }
-
-                transaction.set(novoAgendamentoRef, {
-                    unidade: dados.unidade,
-                    posto: dados.posto,
-                    nome: dados.nome,
-                    rg: dados.rg,
-                    whatsapp: dados.whatsapp,
-                    email: dados.email,
-                    local: dados.local,
-                    localExibicao: dados.localExibicao,
-                    data: dados.data,
-                    horario: dados.horario,
-                    dataHoraRegistro: dados.dataHoraRegistro,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                transaction.set(rgRef, {
-                    rg: dados.rg,
-                    criadoEm: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                transaction.set(vagaRef, {
-                    local: dados.local,
-                    data: dados.data,
-                    limite: limite,
-                    vagasRestantes: vagasRestantesAtuais - 1,
-                    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
+            transaction.set(novoAgendamentoRef, {
+                unidade: dados.unidade,
+                posto: dados.posto,
+                nome: dados.nome,
+                rg: dados.rg,
+                whatsapp: dados.whatsapp,
+                email: dados.email,
+                local: dados.local,
+                localExibicao: dados.localExibicao,
+                data: dados.data,
+                horario: dados.horario,
+                dataHoraRegistro: dados.dataHoraRegistro,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
 
-            document.getElementById("res-nome").innerText = `${dados.posto} ${dados.nome}`.trim();
-            document.getElementById("res-rg").innerText = dados.rg;
-            document.getElementById("res-local").innerText = dados.localExibicao;
-            document.getElementById("res-data").innerText = dados.data;
-            document.getElementById("res-horario").innerText = dados.horario;
+            transaction.set(rgRef, {
+                rg: dados.rg,
+                criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+            });
 
-            document.getElementById("form-content").style.display = "none";
-            document.getElementById("sucesso").style.display = "block";
-            window.scrollTo(0, 0);
+            transaction.set(vagaRef, {
+                local: dados.local,
+                data: dados.data,
+                limite: limite,
+                vagasRestantes: vagasRestantesAtuais - 1,
+                atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+        });
 
-        } catch (e) {
-            alert(e.message || "Erro ao salvar! Verifique a internet.");
-            btn.innerText = "Confirmar Inscrição";
-            btn.disabled = false;
-            await verificarVagas();
-        }
+        document.getElementById("res-nome").innerText = `${dados.posto} ${dados.nome}`.trim();
+        document.getElementById("res-rg").innerText = dados.rg;
+        document.getElementById("res-local").innerText = dados.localExibicao;
+        document.getElementById("res-data").innerText = dados.data;
+        document.getElementById("res-horario").innerText = dados.horario;
+
+        document.getElementById("form-content").style.display = "none";
+        document.getElementById("sucesso").style.display = "block";
+        window.scrollTo(0, 0);
+
+    } catch (e) {
+        alert(e.message || "Erro ao salvar! Verifique a internet.");
+        btn.innerText = "Confirmar Inscrição";
+        btn.disabled = false;
+        await verificarVagas();
     }
+}
 
     function imprimirComprovante() {
         const nome = document.getElementById("res-nome").innerText;
