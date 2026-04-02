@@ -503,6 +503,23 @@
     btn.disabled = true;
 
     try {
+        // VALIDAÇÃO EXTRA: procura agendamento antigo por RG
+        const agendamentoExistente = await db.collection("agendamentos_dermato")
+            .where("rg", "==", dados.rg)
+            .limit(1)
+            .get();
+
+        if (!agendamentoExistente.empty) {
+            // opcional: recria o lock caso esteja faltando
+            await db.collection("controle_rg_dermato").doc(dados.rg).set({
+                rg: dados.rg,
+                criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+                origem: "reconstruido_a_partir_de_agendamento_antigo"
+            }, { merge: true });
+
+            throw new Error("Já existe agendamento anterior para este RG. Não é permitido mais de um agendamento por militar.");
+        }
+
         const rgRef = db.collection("controle_rg_dermato").doc(dados.rg);
         const vagaRef = db.collection("controle_vagas_dermato").doc(gerarIdVaga(dados.local, dados.data));
         const novoAgendamentoRef = db.collection("agendamentos_dermato").doc();
@@ -538,7 +555,8 @@
                 data: dados.data,
                 horario: dados.horario,
                 dataHoraRegistro: dados.dataHoraRegistro,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                status: "ativo"
             });
 
             transaction.set(rgRef, {
@@ -572,7 +590,6 @@
         await verificarVagas();
     }
 }
-
     function imprimirComprovante() {
         const nome = document.getElementById("res-nome").innerText;
         const rg = document.getElementById("res-rg").innerText;
