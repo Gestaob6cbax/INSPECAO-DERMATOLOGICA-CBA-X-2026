@@ -247,7 +247,7 @@
         <input type="text" id="nome" placeholder="NOME COMPLETO" oninput="this.value = this.value.toUpperCase()">
 
         <label>RG Militar</label>
-        <input type="number" id="rg" placeholder="Somente números">
+        <input type="text" id="rg" placeholder="Somente números" inputmode="numeric" maxlength="20">
 
         <label>WhatsApp</label>
         <input type="text" id="telefone" placeholder="(XX) 9XXXX-XXXX">
@@ -382,6 +382,27 @@
         return String(valor || "").replace(/\D/g, "").trim();
     }
 
+    function gerarVariacoesRG(rgNormalizado) {
+        const base = normalizarRG(rgNormalizado);
+        if (!base) return [];
+
+        const variacoes = new Set();
+        variacoes.add(base);
+
+        const semZerosAEsquerda = base.replace(/^0+/, "");
+        if (semZerosAEsquerda) {
+            variacoes.add(semZerosAEsquerda);
+        }
+
+        if (base.length < 20) {
+            for (let i = 1; i <= 5; i++) {
+                variacoes.add(base.padStart(base.length + i, "0"));
+            }
+        }
+
+        return Array.from(variacoes);
+    }
+
     function gerarIdVaga(local, data) {
         return `${local}_${data.replaceAll("/", "-")}`;
     }
@@ -474,122 +495,182 @@
         }
     }
 
-  async function salvar() {
-    const btn = document.getElementById("btnSalvar");
+    async function existeAgendamentoAnteriorPorRG(rgNormalizado) {
+        const variacoes = gerarVariacoesRG(rgNormalizado);
 
-    const localSelecionado = document.getElementById("localInspecao").value;
-    const rgInformado = normalizarRG(document.getElementById("rg").value);
+        for (const rgVariacao of variacoes) {
+            const snap = await db.collection("agendamentos_dermato")
+                .where("rg", "==", rgVariacao)
+                .limit(1)
+                .get();
 
-    const dados = {
-        unidade: document.getElementById("unidadeOrigem").value,
-        posto: document.getElementById("posto").value,
-        nome: document.getElementById("nome").value.trim().toUpperCase(),
-        rg: rgInformado,
-        whatsapp: document.getElementById("telefone").value.trim(),
-        email: document.getElementById("email").value.trim(),
-        local: localSelecionado,
-        data: document.getElementById("data").value,
-        horario: configLocal[localSelecionado]?.horario || "",
-        localExibicao: configLocal[localSelecionado]?.nomeExibicao || "",
-        dataHoraRegistro: new Date().toLocaleString()
-    };
-
-    if (!dados.unidade || !dados.posto || !dados.nome || !dados.rg || !dados.local || !dados.data) {
-        alert("Preencha todos os campos obrigatórios.");
-        return;
-    }
-
-    btn.innerText = "SALVANDO...";
-    btn.disabled = true;
-
-    try {
-        // VALIDAÇÃO EXTRA: procura agendamento antigo por RG
-        const agendamentoExistente = await db.collection("agendamentos_dermato")
-            .where("rg", "==", dados.rg)
-            .limit(1)
-            .get();
-
-        if (!agendamentoExistente.empty) {
-            // opcional: recria o lock caso esteja faltando
-            await db.collection("controle_rg_dermato").doc(dados.rg).set({
-                rg: dados.rg,
-                criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
-                origem: "reconstruido_a_partir_de_agendamento_antigo"
-            }, { merge: true });
-
-            throw new Error("Já existe agendamento anterior para este RG. Não é permitido mais de um agendamento por militar.");
+            if (!snap.empty) {
+                return {
+                    existe: true,
+                    rgEncontrado: rgVariacao
+                };
+            }
         }
 
-        const rgRef = db.collection("controle_rg_dermato").doc(dados.rg);
-        const vagaRef = db.collection("controle_vagas_dermato").doc(gerarIdVaga(dados.local, dados.data));
-        const novoAgendamentoRef = db.collection("agendamentos_dermato").doc();
+        return {
+            existe: false,
+            rgEncontrado: null
+        };
+    }
 
-        await db.runTransaction(async (transaction) => {
-            const rgLockDoc = await transaction.get(rgRef);
+    async function existeLockAnteriorPorRG(rgNormalizado) {
+        const variacoes = gerarVariacoesRG(rgNormalizado);
 
-            if (rgLockDoc.exists) {
-                throw new Error("Já existe um agendamento realizado para este RG. Não é permitido mais de um agendamento por militar.");
+        for (const rgVariacao of variacoes) {
+            const rgRef = db.collection("controle_rg_dermato").doc(rgVariacao);
+            const rgDoc = await rgRef.get();
+
+            if (rgDoc.exists) {
+                return {
+                    existe: true,
+                    rgEncontrado: rgVariacao
+                };
             }
+        }
 
-            const vagaDoc = await transaction.get(vagaRef);
-            const limite = Number(configLocal[dados.local].limite);
-            let vagasRestantesAtuais = limite;
+        return {
+            existe: false,
+            rgEncontrado: null
+        };
+    }
 
-            if (vagaDoc.exists) {
-                vagasRestantesAtuais = Number(vagaDoc.data().vagasRestantes || 0);
-            }
+    async function criarOuReconstruirLocksRG(rgNormalizado, origem = "sistema") {
+        const variacoes = gerarVariacoesRG(rgNormalizado);
 
-            if (vagasRestantesAtuais <= 0) {
-                throw new Error("Este dia já está com as vagas esgotadas.");
-            }
-
-            transaction.set(novoAgendamentoRef, {
-                unidade: dados.unidade,
-                posto: dados.posto,
-                nome: dados.nome,
-                rg: dados.rg,
-                whatsapp: dados.whatsapp,
-                email: dados.email,
-                local: dados.local,
-                localExibicao: dados.localExibicao,
-                data: dados.data,
-                horario: dados.horario,
-                dataHoraRegistro: dados.dataHoraRegistro,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                status: "ativo"
-            });
-
-            transaction.set(rgRef, {
-                rg: dados.rg,
+        const batch = db.batch();
+        variacoes.forEach((rgVariacao) => {
+            const rgRef = db.collection("controle_rg_dermato").doc(rgVariacao);
+            batch.set(rgRef, {
+                rg: rgVariacao,
+                rgPrincipal: rgNormalizado,
+                origem: origem,
                 criadoEm: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            transaction.set(vagaRef, {
-                local: dados.local,
-                data: dados.data,
-                limite: limite,
-                vagasRestantes: vagasRestantesAtuais - 1,
-                atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
         });
 
-        document.getElementById("res-nome").innerText = `${dados.posto} ${dados.nome}`.trim();
-        document.getElementById("res-rg").innerText = dados.rg;
-        document.getElementById("res-local").innerText = dados.localExibicao;
-        document.getElementById("res-data").innerText = dados.data;
-        document.getElementById("res-horario").innerText = dados.horario;
-
-        document.getElementById("form-content").style.display = "none";
-        document.getElementById("sucesso").style.display = "block";
-        window.scrollTo(0, 0);
-
-    } catch (e) {
-        alert(e.message || "Erro ao salvar! Verifique a internet.");
-        btn.innerText = "Confirmar Inscrição";
-        btn.disabled = false;
-        await verificarVagas();
+        await batch.commit();
     }
-}
+
+    async function salvar() {
+        const btn = document.getElementById("btnSalvar");
+
+        const localSelecionado = document.getElementById("localInspecao").value;
+        const rgInformado = normalizarRG(document.getElementById("rg").value);
+
+        const dados = {
+            unidade: document.getElementById("unidadeOrigem").value,
+            posto: document.getElementById("posto").value,
+            nome: document.getElementById("nome").value.trim().toUpperCase(),
+            rg: rgInformado,
+            whatsapp: document.getElementById("telefone").value.trim(),
+            email: document.getElementById("email").value.trim(),
+            local: localSelecionado,
+            data: document.getElementById("data").value,
+            horario: configLocal[localSelecionado]?.horario || "",
+            localExibicao: configLocal[localSelecionado]?.nomeExibicao || "",
+            dataHoraRegistro: new Date().toLocaleString()
+        };
+
+        if (!dados.unidade || !dados.posto || !dados.nome || !dados.rg || !dados.local || !dados.data) {
+            alert("Preencha todos os campos obrigatórios.");
+            return;
+        }
+
+        btn.innerText = "SALVANDO...";
+        btn.disabled = true;
+
+        try {
+            const agendamentoExistente = await existeAgendamentoAnteriorPorRG(dados.rg);
+            if (agendamentoExistente.existe) {
+                await criarOuReconstruirLocksRG(dados.rg, "reconstruido_a_partir_de_agendamento_antigo");
+                throw new Error("Já existe agendamento anterior para este RG. Não é permitido mais de um agendamento por militar.");
+            }
+
+            const lockExistente = await existeLockAnteriorPorRG(dados.rg);
+            if (lockExistente.existe) {
+                throw new Error("Já existe um agendamento realizado para este RG. Não é permitido mais de um agendamento por militar.");
+            }
+
+            const rgRefPrincipal = db.collection("controle_rg_dermato").doc(dados.rg);
+            const vagaRef = db.collection("controle_vagas_dermato").doc(gerarIdVaga(dados.local, dados.data));
+            const novoAgendamentoRef = db.collection("agendamentos_dermato").doc();
+
+            await db.runTransaction(async (transaction) => {
+                const rgLockDoc = await transaction.get(rgRefPrincipal);
+
+                if (rgLockDoc.exists) {
+                    throw new Error("Já existe um agendamento realizado para este RG. Não é permitido mais de um agendamento por militar.");
+                }
+
+                const vagaDoc = await transaction.get(vagaRef);
+                const limite = Number(configLocal[dados.local].limite);
+                let vagasRestantesAtuais = limite;
+
+                if (vagaDoc.exists) {
+                    vagasRestantesAtuais = Number(vagaDoc.data().vagasRestantes || 0);
+                }
+
+                if (vagasRestantesAtuais <= 0) {
+                    throw new Error("Este dia já está com as vagas esgotadas.");
+                }
+
+                transaction.set(novoAgendamentoRef, {
+                    unidade: dados.unidade,
+                    posto: dados.posto,
+                    nome: dados.nome,
+                    rg: dados.rg,
+                    whatsapp: dados.whatsapp,
+                    email: dados.email,
+                    local: dados.local,
+                    localExibicao: dados.localExibicao,
+                    data: dados.data,
+                    horario: dados.horario,
+                    dataHoraRegistro: dados.dataHoraRegistro,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: "ativo"
+                });
+
+                transaction.set(rgRefPrincipal, {
+                    rg: dados.rg,
+                    rgPrincipal: dados.rg,
+                    criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+                    origem: "novo_agendamento"
+                }, { merge: true });
+
+                transaction.set(vagaRef, {
+                    local: dados.local,
+                    data: dados.data,
+                    limite: limite,
+                    vagasRestantes: vagasRestantesAtuais - 1,
+                    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+            });
+
+            await criarOuReconstruirLocksRG(dados.rg, "novo_agendamento");
+
+            document.getElementById("res-nome").innerText = `${dados.posto} ${dados.nome}`.trim();
+            document.getElementById("res-rg").innerText = dados.rg;
+            document.getElementById("res-local").innerText = dados.localExibicao;
+            document.getElementById("res-data").innerText = dados.data;
+            document.getElementById("res-horario").innerText = dados.horario;
+
+            document.getElementById("form-content").style.display = "none";
+            document.getElementById("sucesso").style.display = "block";
+            window.scrollTo(0, 0);
+
+        } catch (e) {
+            alert(e.message || "Erro ao salvar! Verifique a internet.");
+            btn.innerText = "Confirmar Inscrição";
+            btn.disabled = false;
+            await verificarVagas();
+        }
+    }
+
     function imprimirComprovante() {
         const nome = document.getElementById("res-nome").innerText;
         const rg = document.getElementById("res-rg").innerText;
