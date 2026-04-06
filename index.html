@@ -145,26 +145,6 @@
             cursor: not-allowed;
         }
 
-        .btn-admin {
-            background: var(--cba-blue);
-            color: white;
-            border: none;
-            padding: 14px;
-            width: 100%;
-            border-radius: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-        }
-
-        .admin-box {
-            margin-top: 18px;
-            padding-top: 14px;
-            border-top: 1px dashed #ccc;
-        }
-
         #sucesso {
             display: none;
             text-align: center;
@@ -207,15 +187,8 @@
             font-weight: 700;
         }
 
-        .admin-info {
-            margin-top: 8px;
-            font-size: 0.75rem;
-            color: #666;
-            text-align: center;
-        }
-
         @media print {
-            .btn-confirmar, .btn-admin, .link-outro, #form-content, .section-title, .admin-box {
+            .btn-confirmar, .link-outro, #form-content, .section-title {
                 display: none !important;
             }
 
@@ -323,15 +296,6 @@
         <div id="msgVagas" class="vagas-info"></div>
 
         <button id="btnSalvar" class="btn-confirmar" onclick="salvar()" disabled>Confirmar Inscrição</button>
-
-        <div class="admin-box">
-            <button type="button" class="btn-admin" onclick="sanearRGsAntigosDermato()">
-                Sanear RGs Antigos
-            </button>
-            <div class="admin-info">
-                Use este botão apenas para regularizar agendamentos antigos já existentes no banco.
-            </div>
-        </div>
     </div>
 
     <div id="sucesso">
@@ -704,84 +668,6 @@
         }
     }
 
-    async function sanearRGsAntigosDermato() {
-        const confirmar = confirm(
-            "Deseja executar o saneamento dos RGs antigos?\n\n" +
-            "Essa ação vai:\n" +
-            "- Ler todos os agendamentos de agendamentos_dermato\n" +
-            "- Padronizar o RG para 5 dígitos\n" +
-            "- Criar/atualizar os locks em controle_rg_dermato"
-        );
-
-        if (!confirmar) return;
-
-        try {
-            const snapshot = await db.collection("agendamentos_dermato").get();
-
-            if (snapshot.empty) {
-                alert("Nenhum agendamento encontrado para saneamento.");
-                return;
-            }
-
-            let totalLidos = 0;
-            let totalAtualizados = 0;
-            let totalLocksCriados = 0;
-            let totalInvalidos = 0;
-
-            for (const docSnap of snapshot.docs) {
-                totalLidos++;
-
-                const dados = docSnap.data() || {};
-                const rgOriginal = String(dados.rg || "");
-                const rgNormalizado = normalizarRG(rgOriginal);
-
-                if (!/^\d{5}$/.test(rgNormalizado)) {
-                    totalInvalidos++;
-                    console.warn("RG inválido ignorado:", {
-                        docId: docSnap.id,
-                        rgOriginal
-                    });
-                    continue;
-                }
-
-                const batch = db.batch();
-
-                if (rgOriginal !== rgNormalizado) {
-                    batch.update(docSnap.ref, {
-                        rg: rgNormalizado,
-                        rgOriginalLegado: rgOriginal,
-                        rgSaneadoEm: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    totalAtualizados++;
-                }
-
-                const lockRef = db.collection("controle_rg_dermato").doc(rgNormalizado);
-                batch.set(lockRef, {
-                    rg: rgNormalizado,
-                    rgPrincipal: rgNormalizado,
-                    origem: "saneamento_agendamentos_antigos",
-                    criadoEm: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
-
-                totalLocksCriados++;
-
-                await batch.commit();
-            }
-
-            alert(
-                "Saneamento concluído com sucesso!\n\n" +
-                `Agendamentos lidos: ${totalLidos}\n` +
-                `RGs atualizados: ${totalAtualizados}\n` +
-                `Locks criados/atualizados: ${totalLocksCriados}\n` +
-                `Registros inválidos ignorados: ${totalInvalidos}`
-            );
-
-        } catch (error) {
-            console.error("Erro no saneamento:", error);
-            alert("Erro ao executar saneamento dos RGs antigos.");
-        }
-    }
-
     function imprimirComprovante() {
         const nome = document.getElementById("res-nome").innerText;
         const rg = document.getElementById("res-rg").innerText;
@@ -805,4 +691,3 @@
 
 </body>
 </html>
-
