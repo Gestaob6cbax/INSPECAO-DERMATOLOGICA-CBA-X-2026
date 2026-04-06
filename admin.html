@@ -339,7 +339,7 @@
 
 <div class="header-adm">
     <div style="display: flex; align-items: center; gap: 15px;">
-        <img src="https://raw.githubusercontent.com/gestaob6cbax/INSPECAO-MEDICA-CBA-X-2026/main/logo_cba_x.png" width="55">
+        <img src="https://raw.githubusercontent.com/gestaob6cbax/INSPECAO-MEDICA-CBA-X-2026/main/logo_cba_x.png" width="55" alt="Logo CBA X">
         <div>
             <h2 style="margin:0; color:var(--cba-orange-dark);">Painel ADM Dermatologia 2026</h2>
             <small style="color:var(--cba-blue); font-weight: bold;">CBA X - 6ª SEÇÃO</small>
@@ -368,7 +368,7 @@
 
 <div class="toolbar">
     <input type="text" id="busca" placeholder="🔍 Filtrar por Nome, RG, Unidade, Polo, Data, Telefone ou E-mail..." oninput="filtrar()">
-    <button class="btn btn-del-multi" onclick="excluirSelecionados()">🗑️ EXCLUIR SELECIONADOS</button>
+    <button class="btn btn-del-multi" onclick="excluirSelecionados()">🗑️ CANCELAR SELECIONADOS</button>
     <button class="btn btn-refresh" onclick="selecionarTodosVisiveis()">☑️ MARCAR TODOS</button>
     <button class="btn btn-refresh" onclick="limparSelecao()">⬜ LIMPAR SELEÇÃO</button>
     <span class="selecionados-info">Selecionados: <span id="totalSelecionados">0</span></span>
@@ -450,12 +450,24 @@
     let dadosFiltrados = [];
     let selecionados = new Set();
 
+    function normalizarRG(valor) {
+        return String(valor || "")
+            .replace(/\D/g, "")
+            .trim()
+            .padStart(5, "0")
+            .slice(-5);
+    }
+
     function parseDataBR(dataStr) {
         if (!dataStr || typeof dataStr !== "string") return new Date(0);
         const partes = dataStr.split("/");
         if (partes.length !== 3) return new Date(0);
         const [dia, mes, ano] = partes.map(Number);
         return new Date(ano, mes - 1, dia);
+    }
+
+    function gerarIdVaga(local, data) {
+        return `${local}_${String(data || "").replaceAll("/", "-")}`;
     }
 
     function obterNomePolo(local) {
@@ -472,7 +484,8 @@
 
             todosOsDados = snap.docs.map(doc => ({
                 id: doc.id,
-                ...doc.data()
+                ...doc.data(),
+                rg: normalizarRG(doc.data().rg)
             }));
 
             todosOsDados.sort((a, b) => parseDataBR(a.data) - parseDataBR(b.data));
@@ -662,17 +675,89 @@
         checkTodos.checked = dadosFiltrados.every(d => selecionados.has(d.id));
     }
 
+    async function reconciliarLockPorRG(rgNormalizado) {
+        const rg = normalizarRG(rgNormalizado);
+        if (!/^\d{5}$/.test(rg)) return;
+
+        const restantes = await db.collection("agendamentos_dermato")
+            .where("rg", "==", rg)
+            .limit(1)
+            .get();
+
+        const lockRef = db.collection("controle_rg_dermato").doc(rg);
+
+        if (restantes.empty) {
+            try {
+                await lockRef.delete();
+            } catch (e) {
+                console.warn("Lock já inexistente ou não removido:", rg, e);
+            }
+        } else {
+            await lockRef.set({
+                rg: rg,
+                rgPrincipal: rg,
+                origem: "reconciliado_no_cancelamento",
+                criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+        }
+    }
+
+    async function cancelarAgendamentoSeguro(id) {
+        const agRef = db.collection("agendamentos_dermato").doc(id);
+        let rgNormalizado = "";
+
+        await db.runTransaction(async (transaction) => {
+            const agDoc = await transaction.get(agRef);
+
+            if (!agDoc.exists) {
+                throw new Error("Agendamento não encontrado.");
+            }
+
+            const dados = agDoc.data() || {};
+            rgNormalizado = normalizarRG(dados.rg);
+
+            const local = dados.local;
+            const data = dados.data;
+
+            if (!/^\d{5}$/.test(rgNormalizado) || !local || !data) {
+                throw new Error("Dados do agendamento incompletos para cancelamento.");
+            }
+
+            const vagaRef = db.collection("controle_vagas_dermato").doc(gerarIdVaga(local, data));
+            const vagaDoc = await transaction.get(vagaRef);
+
+            const limite = Number(configLocal[local]?.limite || 0);
+            let vagasRestantesAtuais = limite;
+
+            if (vagaDoc.exists) {
+                vagasRestantesAtuais = Number(vagaDoc.data().vagasRestantes || 0);
+            }
+
+            transaction.set(vagaRef, {
+                local,
+                data,
+                limite,
+                vagasRestantes: Math.min(vagasRestantesAtuais + 1, limite),
+                atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+
+            transaction.delete(agRef);
+        });
+
+        await reconciliarLockPorRG(rgNormalizado);
+    }
+
     async function excluir(id, nome) {
-        if (!confirm(`Deseja excluir o agendamento de ${nome}?\n\nA vaga voltará a ficar disponível e o militar poderá agendar novamente com o mesmo RG.`)) {
+        if (!confirm(`Deseja cancelar o agendamento de ${nome}?\n\nA vaga voltará a ficar disponível. O RG só será liberado se não existir outro agendamento para esse militar.`)) {
             return;
         }
 
         try {
-            await db.collection("agendamentos_dermato").doc(id).delete();
+            await cancelarAgendamentoSeguro(id);
             selecionados.delete(id);
             await carregarDados();
         } catch (error) {
-            alert("Erro ao excluir o agendamento.");
+            alert(error.message || "Erro ao cancelar o agendamento.");
             console.error(error);
         }
     }
@@ -685,19 +770,19 @@
             return;
         }
 
-        if (!confirm(`Deseja excluir ${ids.length} agendamento(s) selecionado(s)?\n\nAs vagas voltarão a ficar disponíveis e os militares poderão agendar novamente com o mesmo RG.`)) {
+        if (!confirm(`Deseja cancelar ${ids.length} agendamento(s) selecionado(s)?\n\nAs vagas voltarão a ficar disponíveis. Cada RG só será liberado se não restar nenhum outro agendamento dele.`)) {
             return;
         }
 
         try {
             for (const id of ids) {
-                await db.collection("agendamentos_dermato").doc(id).delete();
+                await cancelarAgendamentoSeguro(id);
             }
 
             selecionados.clear();
             await carregarDados();
         } catch (error) {
-            alert("Erro ao excluir os agendamentos selecionados.");
+            alert(error.message || "Erro ao cancelar os agendamentos selecionados.");
             console.error(error);
         }
     }
