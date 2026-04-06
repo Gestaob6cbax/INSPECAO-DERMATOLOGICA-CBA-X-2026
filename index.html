@@ -145,6 +145,26 @@
             cursor: not-allowed;
         }
 
+        .btn-admin {
+            background: var(--cba-blue);
+            color: white;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .admin-box {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px dashed #ccc;
+        }
+
         #sucesso {
             display: none;
             text-align: center;
@@ -179,8 +199,23 @@
             text-decoration: underline;
         }
 
+        .erro-campo {
+            display: none;
+            margin-top: 6px;
+            color: #b00020;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .admin-info {
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: #666;
+            text-align: center;
+        }
+
         @media print {
-            .btn-confirmar, .link-outro, #form-content, .section-title {
+            .btn-confirmar, .btn-admin, .link-outro, #form-content, .section-title, .admin-box {
                 display: none !important;
             }
 
@@ -247,7 +282,15 @@
         <input type="text" id="nome" placeholder="NOME COMPLETO" oninput="this.value = this.value.toUpperCase()">
 
         <label>RG Militar</label>
-        <input type="text" id="rg" placeholder="Somente números" inputmode="numeric" maxlength="20">
+        <input
+            type="text"
+            id="rg"
+            placeholder="Somente 5 dígitos"
+            inputmode="numeric"
+            maxlength="5"
+            oninput="validarRGInput(this)"
+        >
+        <small id="erroRG" class="erro-campo"></small>
 
         <label>WhatsApp</label>
         <input type="text" id="telefone" placeholder="(XX) 9XXXX-XXXX">
@@ -280,6 +323,15 @@
         <div id="msgVagas" class="vagas-info"></div>
 
         <button id="btnSalvar" class="btn-confirmar" onclick="salvar()" disabled>Confirmar Inscrição</button>
+
+        <div class="admin-box">
+            <button type="button" class="btn-admin" onclick="sanearRGsAntigosDermato()">
+                Sanear RGs Antigos
+            </button>
+            <div class="admin-info">
+                Use este botão apenas para regularizar agendamentos antigos já existentes no banco.
+            </div>
+        </div>
     </div>
 
     <div id="sucesso">
@@ -378,29 +430,41 @@
         }
     };
 
-    function normalizarRG(valor) {
-        return String(valor || "").replace(/\D/g, "").trim();
+    function mostrarErroRG(msg) {
+        const erro = document.getElementById("erroRG");
+        erro.innerText = msg;
+        erro.style.display = "block";
     }
 
-    function gerarVariacoesRG(rgNormalizado) {
-        const base = normalizarRG(rgNormalizado);
-        if (!base) return [];
+    function esconderErroRG() {
+        const erro = document.getElementById("erroRG");
+        erro.innerText = "";
+        erro.style.display = "none";
+    }
 
-        const variacoes = new Set();
-        variacoes.add(base);
+    function validarRGInput(campo) {
+        const valorOriginal = campo.value;
+        const valorLimpo = valorOriginal.replace(/\D/g, "");
 
-        const semZerosAEsquerda = base.replace(/^0+/, "");
-        if (semZerosAEsquerda) {
-            variacoes.add(semZerosAEsquerda);
+        if (valorOriginal !== valorLimpo) {
+            mostrarErroRG("Digite apenas números.");
+        } else {
+            esconderErroRG();
         }
 
-        if (base.length < 20) {
-            for (let i = 1; i <= 5; i++) {
-                variacoes.add(base.padStart(base.length + i, "0"));
-            }
-        }
+        campo.value = valorLimpo.slice(0, 5);
 
-        return Array.from(variacoes);
+        if (campo.value.length === 5) {
+            esconderErroRG();
+        }
+    }
+
+    function normalizarRG(valor) {
+        return String(valor || "")
+            .replace(/\D/g, "")
+            .trim()
+            .padStart(5, "0")
+            .slice(-5);
     }
 
     function gerarIdVaga(local, data) {
@@ -496,77 +560,42 @@
     }
 
     async function existeAgendamentoAnteriorPorRG(rgNormalizado) {
-        const variacoes = gerarVariacoesRG(rgNormalizado);
+        const snap = await db.collection("agendamentos_dermato")
+            .where("rg", "==", rgNormalizado)
+            .limit(1)
+            .get();
 
-        for (const rgVariacao of variacoes) {
-            const snap = await db.collection("agendamentos_dermato")
-                .where("rg", "==", rgVariacao)
-                .limit(1)
-                .get();
-
-            if (!snap.empty) {
-                return {
-                    existe: true,
-                    rgEncontrado: rgVariacao
-                };
-            }
-        }
-
-        return {
-            existe: false,
-            rgEncontrado: null
-        };
+        return !snap.empty;
     }
 
     async function existeLockAnteriorPorRG(rgNormalizado) {
-        const variacoes = gerarVariacoesRG(rgNormalizado);
-
-        for (const rgVariacao of variacoes) {
-            const rgRef = db.collection("controle_rg_dermato").doc(rgVariacao);
-            const rgDoc = await rgRef.get();
-
-            if (rgDoc.exists) {
-                return {
-                    existe: true,
-                    rgEncontrado: rgVariacao
-                };
-            }
-        }
-
-        return {
-            existe: false,
-            rgEncontrado: null
-        };
+        const rgRef = db.collection("controle_rg_dermato").doc(rgNormalizado);
+        const rgDoc = await rgRef.get();
+        return rgDoc.exists;
     }
 
-    async function criarOuReconstruirLocksRG(rgNormalizado, origem = "sistema") {
-        const variacoes = gerarVariacoesRG(rgNormalizado);
-
-        const batch = db.batch();
-        variacoes.forEach((rgVariacao) => {
-            const rgRef = db.collection("controle_rg_dermato").doc(rgVariacao);
-            batch.set(rgRef, {
-                rg: rgVariacao,
-                rgPrincipal: rgNormalizado,
-                origem: origem,
-                criadoEm: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
-        });
-
-        await batch.commit();
+    async function criarOuReconstruirLockRG(rgNormalizado, origem = "sistema") {
+        const rgRef = db.collection("controle_rg_dermato").doc(rgNormalizado);
+        await rgRef.set({
+            rg: rgNormalizado,
+            rgPrincipal: rgNormalizado,
+            origem: origem,
+            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
     }
 
     async function salvar() {
         const btn = document.getElementById("btnSalvar");
+        esconderErroRG();
 
         const localSelecionado = document.getElementById("localInspecao").value;
-        const rgInformado = normalizarRG(document.getElementById("rg").value);
+        const rgInformado = document.getElementById("rg").value;
 
         const dados = {
             unidade: document.getElementById("unidadeOrigem").value,
             posto: document.getElementById("posto").value,
             nome: document.getElementById("nome").value.trim().toUpperCase(),
-            rg: rgInformado,
+            rg: normalizarRG(rgInformado),
             whatsapp: document.getElementById("telefone").value.trim(),
             email: document.getElementById("email").value.trim(),
             local: localSelecionado,
@@ -581,27 +610,33 @@
             return;
         }
 
+        if (!/^\d{5}$/.test(dados.rg)) {
+            mostrarErroRG("RG deve conter exatamente 5 números.");
+            document.getElementById("rg").focus();
+            return;
+        }
+
         btn.innerText = "SALVANDO...";
         btn.disabled = true;
 
         try {
             const agendamentoExistente = await existeAgendamentoAnteriorPorRG(dados.rg);
-            if (agendamentoExistente.existe) {
-                await criarOuReconstruirLocksRG(dados.rg, "reconstruido_a_partir_de_agendamento_antigo");
+            if (agendamentoExistente) {
+                await criarOuReconstruirLockRG(dados.rg, "reconstruido_a_partir_de_agendamento_antigo");
                 throw new Error("Já existe agendamento anterior para este RG. Não é permitido mais de um agendamento por militar.");
             }
 
             const lockExistente = await existeLockAnteriorPorRG(dados.rg);
-            if (lockExistente.existe) {
+            if (lockExistente) {
                 throw new Error("Já existe um agendamento realizado para este RG. Não é permitido mais de um agendamento por militar.");
             }
 
-            const rgRefPrincipal = db.collection("controle_rg_dermato").doc(dados.rg);
+            const rgRef = db.collection("controle_rg_dermato").doc(dados.rg);
             const vagaRef = db.collection("controle_vagas_dermato").doc(gerarIdVaga(dados.local, dados.data));
             const novoAgendamentoRef = db.collection("agendamentos_dermato").doc();
 
             await db.runTransaction(async (transaction) => {
-                const rgLockDoc = await transaction.get(rgRefPrincipal);
+                const rgLockDoc = await transaction.get(rgRef);
 
                 if (rgLockDoc.exists) {
                     throw new Error("Já existe um agendamento realizado para este RG. Não é permitido mais de um agendamento por militar.");
@@ -635,7 +670,7 @@
                     status: "ativo"
                 });
 
-                transaction.set(rgRefPrincipal, {
+                transaction.set(rgRef, {
                     rg: dados.rg,
                     rgPrincipal: dados.rg,
                     criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
@@ -650,8 +685,6 @@
                     atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
             });
-
-            await criarOuReconstruirLocksRG(dados.rg, "novo_agendamento");
 
             document.getElementById("res-nome").innerText = `${dados.posto} ${dados.nome}`.trim();
             document.getElementById("res-rg").innerText = dados.rg;
@@ -668,6 +701,84 @@
             btn.innerText = "Confirmar Inscrição";
             btn.disabled = false;
             await verificarVagas();
+        }
+    }
+
+    async function sanearRGsAntigosDermato() {
+        const confirmar = confirm(
+            "Deseja executar o saneamento dos RGs antigos?\n\n" +
+            "Essa ação vai:\n" +
+            "- Ler todos os agendamentos de agendamentos_dermato\n" +
+            "- Padronizar o RG para 5 dígitos\n" +
+            "- Criar/atualizar os locks em controle_rg_dermato"
+        );
+
+        if (!confirmar) return;
+
+        try {
+            const snapshot = await db.collection("agendamentos_dermato").get();
+
+            if (snapshot.empty) {
+                alert("Nenhum agendamento encontrado para saneamento.");
+                return;
+            }
+
+            let totalLidos = 0;
+            let totalAtualizados = 0;
+            let totalLocksCriados = 0;
+            let totalInvalidos = 0;
+
+            for (const docSnap of snapshot.docs) {
+                totalLidos++;
+
+                const dados = docSnap.data() || {};
+                const rgOriginal = String(dados.rg || "");
+                const rgNormalizado = normalizarRG(rgOriginal);
+
+                if (!/^\d{5}$/.test(rgNormalizado)) {
+                    totalInvalidos++;
+                    console.warn("RG inválido ignorado:", {
+                        docId: docSnap.id,
+                        rgOriginal
+                    });
+                    continue;
+                }
+
+                const batch = db.batch();
+
+                if (rgOriginal !== rgNormalizado) {
+                    batch.update(docSnap.ref, {
+                        rg: rgNormalizado,
+                        rgOriginalLegado: rgOriginal,
+                        rgSaneadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    totalAtualizados++;
+                }
+
+                const lockRef = db.collection("controle_rg_dermato").doc(rgNormalizado);
+                batch.set(lockRef, {
+                    rg: rgNormalizado,
+                    rgPrincipal: rgNormalizado,
+                    origem: "saneamento_agendamentos_antigos",
+                    criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                totalLocksCriados++;
+
+                await batch.commit();
+            }
+
+            alert(
+                "Saneamento concluído com sucesso!\n\n" +
+                `Agendamentos lidos: ${totalLidos}\n` +
+                `RGs atualizados: ${totalAtualizados}\n` +
+                `Locks criados/atualizados: ${totalLocksCriados}\n` +
+                `Registros inválidos ignorados: ${totalInvalidos}`
+            );
+
+        } catch (error) {
+            console.error("Erro no saneamento:", error);
+            alert("Erro ao executar saneamento dos RGs antigos.");
         }
     }
 
